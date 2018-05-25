@@ -16,9 +16,10 @@ import operator
 import string
 import PyPDF2
 import os
-import window.UserUI as user_ui
-import window.StageUI as satge_ui
-import window.BillsUI as bills_ui
+import Model.Uti as uti
+import window.UserUI as user_ui #用户页面
+import window.StageUI as satge_ui #Stage页面
+import window.BillsUI as bills_ui #单据页面
 from reportlab.pdfgen.canvas import Canvas
 from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.lib.styles import getSampleStyleSheet
@@ -29,22 +30,113 @@ from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.cidfonts import UnicodeCIDFont
 pdfmetrics.registerFont(UnicodeCIDFont('STSong-Light'))
 pdfmetrics.registerFont(TTFont('msyh', 'STSONG.TTF'))
+import Model.Attorney as attorney
 
-
-def indexUI():
+User_file=''
+Bills_file=''
+Stage_file=''
+def indexUI(user_file,bills_file,stage_file):
     window = tk.Tk()
     window.title("xxx律师所")
     window.geometry('690x600')
     window.resizable(False, False)
 
+    bills_page = Frame(window, width=500, height=320)
+    adduser_page = Frame(window, width=500, height=320)
+    stage_page = Frame(window, width=500, height=320)
+    rests_page=Frame(window, width=500, height=320)
+
+    User_file=user_file
+    Bills_file=bills_file
+    Stage_file=stage_file
+
+    lbUserss = tk.Listbox(window, height=9, width=24)
+
+    user_dict={}
+    #页面加载时将数据添加到user_dict字典中
+    user_obj=open(User_file,'r')
+    user_data=user_obj.readlines()
+    for dic in user_data:
+        user_dict=eval(dic)
+        for i in user_dict.keys():
+            lbUserss.insert('end',i)
+            bills_ui.users.append(i)
+            bills_ui.bills_ui(bills_page)
+
     # 添加用户
     def addUser():
-        pass
-
+        sex = '男' if int(user_ui.var_sex.get()) == 1 else '女'
+        if  (user_ui.var_username.get() =='') | (user_ui.var_acronym.get()=='') | (sex=='') | (user_ui.var_charge.get()==''):
+            tk.messagebox.showinfo(title='提示',message='请填写相关数据，再进行添加!')
+        elif  len(user_ui.var_ReauthenticationTime.get())<4:
+            tk.messagebox.showinfo(title='提示',message='请输入正确的认证时间!')
+        elif uti.check(user_ui.var_ReauthenticationTime.get())!=True:
+            tk.messagebox.showinfo(title='提示',message='认证时间错误,请重新输入!')
+        elif uti.check(user_ui.var_charge.get())!=True:
+            tk.messagebox.showinfo(title='提示',message='收费标准错误,请重新输入!')
+        else:
+            ss=attorney.Attorney(
+                user_ui.var_username.get(),
+                user_ui.var_acronym.get(),
+                sex,
+                user_ui.var_post.get(),
+                user_ui.var_ReauthenticationTime.get(),
+                float(user_ui.var_charge.get())/60)
+            bills_ui.users.append(user_ui.var_username.get())#将添加的用户添加到单据页面用户下拉列表框
+            bills_ui.bills_ui(bills_page)
+            ss.save(User_file,user_dict)#将数据保存到txt文件中
+            tk.messagebox.showinfo(title='提示',message='添加成功!')
+            lbUserss.insert('end',user_ui.var_username.get())
+            cancels()
     # 添加用户页面_清空按钮
     def cancels():
-        pass
+        user_ui.var_username.set('')
+        user_ui.var_acronym.set('')
+        user_ui.var_sex.set(0)
+        user_ui.var_post.set('')
+        user_ui.var_ReauthenticationTime.set('')
+        user_ui.var_charge.set('')
 
+    #修改用户
+    def updateUser():
+        sex='男' if int(user_ui.var_sexs.get()) == 1 else '女'
+        if  (user_ui.var_usernames.get() =='') | (user_ui.var_acronyms.get()=='')  | (sex=='') |(user_ui.var_charges.get()==''):
+            tk.messagebox.showinfo(title='提示',message='请填写相关数据，再进行添加!')
+        elif  len(user_ui.var_ReauthenticationTimes.get())<4:
+            tk.messagebox.showinfo(title='提示',message='请输入正确的认证时间!')
+        elif uti.check(user_ui.var_ReauthenticationTimes.get())!=True:
+            tk.messagebox.showinfo(title='提示',message='认证时间错误,请重新输入!')
+        else:
+            user_dict[user_ui.var_usernames.get()][0] = user_ui.var_acronyms.get()
+            user_dict[user_ui.var_usernames.get()][1] =  user_ui.var_ReauthenticationTimes.get()
+            user_dict[user_ui.var_usernames.get()][2] = user_ui.var_posts.get()
+            user_dict[user_ui.var_usernames.get()][3] = sex
+            user_dict[user_ui.var_usernames.get()][4] = float(user_ui.var_charges.get())/60
+            fileobj = open(user_file, 'w',encoding="gbk")
+            fileobj.write(str(user_dict))
+            fileobj.close()
+            tk.messagebox.showinfo(title='提示', message='修改成功!')
+            user_ui.clear_data()
+            userUI()
+    #删除用户
+    def removeUser():
+        user_dict.pop(user_ui.var_usernames.get())
+        fileobj = open(user_file, 'w')
+        fileobj.write(str(user_dict))
+        fileobj.close()
+        bills_ui.users.remove(str(user_ui.var_usernames.get()))
+        bills_ui.bills_ui(bills_page)
+        user_ui.clear_data()
+        lbUserss.delete(0, 'end')
+        for i in user_dict :
+            lbUserss.insert('end',i)
+        userUI()
+        tk.messagebox.showinfo(title='提示',message='删除成功!')
+
+    #显示用户信息
+    def show_user(event):
+        raise_frame(rests_page)
+        callUpdateUser()
     # 添加Stage
     def addstageDate():
         stage2=tree_stage.insert("", 0,text=satge_ui.var_stageID.get())
@@ -98,24 +190,41 @@ def indexUI():
     # 退出
     def exita():
         pass
-    #选择stage节点
 
+        # 将值赋值到相关控件中
+
+    def callUpdateUser():
+        try:
+            user = lbUserss.get(lbUserss.curselection())
+            user_ui.var_usernames.set(user)
+            user_ui.var_acronyms.set(user_dict[user][0])
+            user_ui.var_posts.set(user_dict[user][2])
+            user_ui.var_ReauthenticationTimes.set(user_dict[user][1])
+            user_ui.var_charges.set(round(float(user_dict[user][4]) * 60, 2))
+            sex= 1 if user_dict[user][3]== '男' else 2
+            user_ui.var_sexs.set(sex)
+            print(user_ui.var_sexs.get())
+        except Exception as e:
+            pass
+
+    #选择stage节点
     def trefun(event):
         global value
         value = event.widget.selection()
+
     def raise_frame(frame):
         frame.tkraise()
+
     def billsUI():
         raise_frame(bills_page)
+
     def userUI():
         raise_frame(adduser_page)
+
     def stageUI():
         raise_frame(stage_page)
 
-    bills_page = Frame(window, width=500, height=320)
-    adduser_page = Frame(window, width=500, height=320)
-    stage_page = Frame(window, width=500, height=320)
-    rests_page=Frame(window, width=500, height=320)
+
 
     billsUI1 = tk.Button(bills_page, text='Event', width=8, command=billsUI, borderwidth=1).place(x=5,y=0)
     userUI1  = tk.Button(bills_page, text='FeeEarner', width=8, command=userUI, borderwidth=1).place(x=80,y=0)
@@ -129,6 +238,10 @@ def indexUI():
     userUI1  = tk.Button(stage_page, text='FeeEarner', width=8, command=userUI, borderwidth=1).place(x=80,y=0)
     stageUI1 = tk.Button(stage_page, text='Stage', width=8, command=stageUI, borderwidth=1).place(x=155,y=0)
 
+    billsUI1 = tk.Button(rests_page, text='Event', width=8, command=billsUI, borderwidth=1).place(x=5,y=0)
+    userUI1  = tk.Button(rests_page, text='FeeEarner', width=8, command=userUI, borderwidth=1).place(x=80,y=0)
+    stageUI1 = tk.Button(rests_page, text='Stage', width=8, command=stageUI, borderwidth=1).place(x=155,y=0)
+
     for frame in (bills_page, adduser_page, stage_page,rests_page):
         frame.grid(row=0, column=0, sticky='news')
 
@@ -136,7 +249,7 @@ def indexUI():
     user_ui.user_ui(adduser_page)#添加用户UI
     satge_ui.stage_ui(stage_page)#添加StageUI
     bills_ui.bills_ui(bills_page)#添加收据单UI
-
+    user_ui.show_user(rests_page)
 
     #添加用户页面按钮
     addUser = tk.Button(adduser_page, text='添 加', width=5, command=addUser)
@@ -163,10 +276,15 @@ def indexUI():
     cancel_i.place(x=280, y=275)
 
     #用户列表
-    lbUserss = tk.Listbox(window, height=9, width=24)
+
     lbUserss.place(x=530, y=0)
+    lbUserss.bind('<Button-1>', show_user)
 
-
+    #显示用户页面按钮
+    updateUser = tk.Button(rests_page, text='修改', width=5, command=updateUser)
+    removeUser = tk.Button(rests_page, text='删除', width=5, command=removeUser)
+    removeUser.place(x=160, y=220)
+    updateUser.place(x=240, y=220)
 
     #stage
     tree_stage = ttk.Treeview(window,height=8)

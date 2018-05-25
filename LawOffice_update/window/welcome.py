@@ -65,7 +65,7 @@ def welcomeUI():
             recordFile.write(str(data_dict))
             recordFile.close()
             window.destroy()
-            index.indexUI()
+            index.indexUI(var_userFile.get(),var_billsFile.get(),var_stageFile.get())
     #退出按钮
     def cancel():
         sys.exit()
