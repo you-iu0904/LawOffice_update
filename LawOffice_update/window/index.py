@@ -18,7 +18,7 @@ import PyPDF2
 import os
 import Model.Uti as uti
 import window.UserUI as user_ui #用户页面
-import window.StageUI as satge_ui #Stage页面
+import window.StageUI as stage_ui #Stage页面
 import window.BillsUI as bills_ui #单据页面
 from reportlab.pdfgen.canvas import Canvas
 from reportlab.pdfbase.ttfonts import TTFont
@@ -28,9 +28,11 @@ from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer,Image,Table,
 from reportlab.pdfbase import pdfmetrics, ttfonts
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.cidfonts import UnicodeCIDFont
+from xml.etree import ElementTree as et
 pdfmetrics.registerFont(UnicodeCIDFont('STSong-Light'))
 pdfmetrics.registerFont(TTFont('msyh', 'STSONG.TTF'))
 import Model.Attorney as attorney
+import Model.Stage as stage
 
 User_file=''
 Bills_file=''
@@ -63,6 +65,27 @@ def indexUI(user_file,bills_file,stage_file):
             bills_ui.users.append(i)
             bills_ui.bills_ui(bills_page)
 
+    try:
+        #页面加载完成时将数据添加到stage列表中
+        tree_stage = ttk.Treeview(window, height=8)
+        treexml = et.parse(Stage_file)
+        root = treexml.getroot()
+        num=0
+        num1=0
+        num2=0
+        for child in root:
+            myid=tree_stage.insert("", num, text=child.attrib['id'])
+            num+=1
+            for i in child:
+                myidx1 = tree_stage.insert(myid, num1, text=i.text)
+                num1+=1
+                for s in i:
+                    myidx2 = tree_stage.insert(myidx1, num2, text=s.text)
+                    num2+=1
+    except Exception as e:
+        pass
+
+
     # 添加用户
     def addUser():
         sex = '男' if int(user_ui.var_sex.get()) == 1 else '女'
@@ -88,6 +111,7 @@ def indexUI(user_file,bills_file,stage_file):
             tk.messagebox.showinfo(title='提示',message='添加成功!')
             lbUserss.insert('end',user_ui.var_username.get())
             cancels()
+
     # 添加用户页面_清空按钮
     def cancels():
         user_ui.var_username.set('')
@@ -137,9 +161,36 @@ def indexUI(user_file,bills_file,stage_file):
     def show_user(event):
         raise_frame(rests_page)
         callUpdateUser()
+
+
     # 添加Stage
     def addstageDate():
-        stage2=tree_stage.insert("", 0,text=satge_ui.var_stageID.get())
+        if stage_ui.var_stageID.get()=='' :
+            tk.messagebox.showinfo(title='提示', message='请填写编号!')
+        elif uti.check(stage_ui.var_stageID.get())!=True:
+            tk.messagebox.showinfo(title='提示',message='编号只能为数字!')
+        elif stage_ui.var_stageName.get()=='':
+            tk.messagebox.showinfo(title='提示',message='请填写名称!')
+        elif stage_ui.var_stageStartDate_y.get()=='' or stage_ui.var_stageStartDate_m.get()=='' or stage_ui.var_stage_endDate_y.get()=='' or  stage_ui.var_stage_endDate_m.get()=='':
+            tk.messagebox.showinfo(title='提示',message='请填写日期!')
+        elif uti.check(stage_ui.var_stageStartDate_y.get())!=True or uti.check(stage_ui.var_stageStartDate_m.get())!=True or uti.check(stage_ui.var_stage_endDate_y.get())!=True or uti.check(stage_ui.var_stage_endDate_m.get())!=True:
+            tk.messagebox.showinfo(title='提示',message='日期只能填写数字,请重新填写!')
+        elif len(stage_ui.var_stageStartDate_y.get())<4 or int(stage_ui.var_stageStartDate_m.get())>12 or len(stage_ui.var_stage_endDate_y.get())<4 or int(stage_ui.var_stage_endDate_m.get())>12:
+            tk.messagebox.showinfo(title='提示',message='日期格式错误请重新填写!')
+        elif int(stage_ui.var_stageStartDate_y.get()+('0' + stage_ui.var_stageStartDate_m.get() if len(
+                stage_ui.var_stageStartDate_m.get()) == 1 else stage_ui.var_stageStartDate_m.get())) >  int( stage_ui.var_stage_endDate_y.get()+('0' + stage_ui.var_stage_endDate_m.get() if len(
+            stage_ui.var_stage_endDate_m.get())==1 else stage_ui.var_stage_endDate_m.get())):
+            tk.messagebox.showinfo(title='提示',message='开始时间不能大于结束时间!')
+        else:
+            stage_obj=stage.Stage(stage_ui.var_stageID.get(),
+                                  stage_ui.var_stageName.get(),
+                                  stage_ui.var_stageStartDate_y.get(),
+                                  stage_ui.var_stageStartDate_m.get(),
+                                  stage_ui.var_stage_endDate_y.get(),
+                                  stage_ui.var_stage_endDate_m.get()
+                                  )
+            stage_obj.save(stage_file)
+            tree_stage.insert("", 0,text='Stage'+stage_ui.var_stageID.get())
 
     # 修改stage
     def updateStageDate():
@@ -203,7 +254,6 @@ def indexUI(user_file,bills_file,stage_file):
             user_ui.var_charges.set(round(float(user_dict[user][4]) * 60, 2))
             sex= 1 if user_dict[user][3]== '男' else 2
             user_ui.var_sexs.set(sex)
-            print(user_ui.var_sexs.get())
         except Exception as e:
             pass
 
@@ -247,7 +297,7 @@ def indexUI(user_file,bills_file,stage_file):
 
     raise_frame(bills_page)
     user_ui.user_ui(adduser_page)#添加用户UI
-    satge_ui.stage_ui(stage_page)#添加StageUI
+    stage_ui.stage_ui(stage_page)#添加StageUI
     bills_ui.bills_ui(bills_page)#添加收据单UI
     user_ui.show_user(rests_page)
 
@@ -276,7 +326,6 @@ def indexUI(user_file,bills_file,stage_file):
     cancel_i.place(x=280, y=275)
 
     #用户列表
-
     lbUserss.place(x=530, y=0)
     lbUserss.bind('<Button-1>', show_user)
 
@@ -287,11 +336,10 @@ def indexUI(user_file,bills_file,stage_file):
     updateUser.place(x=240, y=220)
 
     #stage
-    tree_stage = ttk.Treeview(window,height=8)
     vbar = ttk.Scrollbar(window, orient=VERTICAL, command=tree_stage.yview)
-    myid = tree_stage.insert("", 0, 'Stage1', text='Stage1', values='1')
-    myidx1 = tree_stage.insert(myid, 0, text='conference within stage1', values='2')
-    myidx2 = tree_stage.insert(myid, 1,  text='with client  ', values='3')
+    # myid = tree_stage.insert("", 0, 'Stage1', text='Stage1', values='1')
+    # myidx1 = tree_stage.insert(myid, 0, text='conference within stage1', values='2')
+    # myidx2 = tree_stage.insert(myid, 1,  text='with client  ', values='3')
     tree_stage.bind("<<TreeviewSelect>>", trefun)
     tree_stage.place(x=530, y=166)
 

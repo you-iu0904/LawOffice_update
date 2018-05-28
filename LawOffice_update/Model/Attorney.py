@@ -7,16 +7,16 @@ class Attorney() :
         self.admitted_time = admitted_time #认证时间
         self.hourly_rate = hourly_rate #收费时间(Hrs)
     #保存数据
-    def save(self,file,usr_dict):
+    def save(self,file,user_dict):
         data=[]
         data.append(self.initials)
         data.append(self.admitted_time)
         data.append(self.title)
         data.append(self.sex)
         data.append(self.hourly_rate)
-        usr_dict[self.fee_earners]=data
+        user_dict[self.fee_earners]=data
         fileobj=open(file,'w')
-        fileobj.write(str(usr_dict))
+        fileobj.write(str(user_dict))
         fileobj.close()
 
 

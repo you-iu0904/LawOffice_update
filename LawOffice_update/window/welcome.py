@@ -46,7 +46,7 @@ def welcomeUI():
         elif var_stageFile.get() == '':
             tk.messagebox.showinfo(title='提示', message='请输入Stage文件路径')
         elif var_userFile.get().endswith('.txt') != True or var_billsFile.get().endswith(
-                '.txt') != True or var_stageFile.get().endswith('.txt') != True:
+                '.txt') != True :
             tk.messagebox.showinfo(title='提示', message='文件格式必须为.txt格式')
         elif os.path.exists(var_userFile.get()) == False:
             tk.messagebox.showinfo(title='提示', message='用户文件不存在,请重新选择')
