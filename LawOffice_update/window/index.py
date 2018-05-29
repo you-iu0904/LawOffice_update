@@ -38,7 +38,15 @@ import Model.Stage as stage
 User_file=''
 Bills_file=''
 Stage_file=''
+
+num = 0
+num1 = 0
+num2 = 0
+
 def indexUI(user_file,bills_file,stage_file):
+    global num
+    global num1
+    global num2
     window = tk.Tk()
     window.title("xxx律师所")
     window.geometry('690x600')
@@ -71,9 +79,6 @@ def indexUI(user_file,bills_file,stage_file):
         tree_stage = ttk.Treeview(window, height=8)
         treexml = et.parse(Stage_file)
         root = treexml.getroot()
-        num=0
-        num1=0
-        num2=0
         for child in root:
             myid=tree_stage.insert("", num, text=child.attrib['id'])
             num+=1
@@ -192,15 +197,18 @@ def indexUI(user_file,bills_file,stage_file):
             stage_ui.var_stage_endDate_y.get() + ('0' + stage_ui.var_stage_endDate_m.get() if len(
                 stage_ui.var_stage_endDate_m.get()) == 1 else stage_ui.var_stage_endDate_m.get())):
             tk.messagebox.showinfo(title='提示', message='开始时间不能大于结束时间!')
-
         else:
             try:
                 dom = xml.dom.minidom.parse(stage_file)
+                start_month = '0' + stage_ui.var_stageStartDate_m.get() if len(str(stage_ui.var_stageStartDate_m.get()))==1 else stage_ui.var_stageStartDate_m.get()
+                end_month = '0' + stage_ui.var_stage_endDate_m.get() if len(str(stage_ui.var_stage_endDate_m.get())) == 1 else stage_ui.var_stage_endDate_m.get()
                 flagDao = stage.FlagDao(stage_file)
-                flagDao.addTag('Stage'+str(stage_ui.var_stageID.get()),stage_ui.var_stageID.get(),str(stage_ui.var_stageStartDate_y.get())+'/'+
-                                          str(stage_ui.var_stageStartDate_m.get())+'-'+
+                flagDao.addTag(stage_ui.var_stageName.get(),str(stage_ui.var_stageStartDate_y.get())+'/'+
+                                          start_month+'-'+
                                           str(stage_ui.var_stage_endDate_y.get())+'/'+
-                                          str(stage_ui.var_stage_endDate_m.get()))
+                                           end_month,
+                                         'Stage' + str(stage_ui.var_stageID.get())
+                               )
                 tree_stage.insert("", num, text='Stage' + stage_ui.var_stageID.get())
                 tk.messagebox.showinfo(title='提示',message='添加成功!')
                 wipe_data()#清空数据
@@ -208,9 +216,9 @@ def indexUI(user_file,bills_file,stage_file):
                     stage_obj=stage.Stage(stage_ui.var_stageID.get(),
                                           stage_ui.var_stageName.get(),
                                           stage_ui.var_stageStartDate_y.get(),
-                                          stage_ui.var_stageStartDate_m.get(),
+                                          '0' + stage_ui.var_stageStartDate_m.get() if len(str(stage_ui.var_stageStartDate_m.get()))==1 else stage_ui.var_stageStartDate_m.get(),
                                           stage_ui.var_stage_endDate_y.get(),
-                                          stage_ui.var_stage_endDate_m.get()
+                                        '0' + stage_ui.var_stage_endDate_m.get() if len(str(stage_ui.var_stage_endDate_m.get())) == 1 else stage_ui.var_stage_endDate_m.get()
                                           )
                     stage_obj.save(stage_file)
                     tree_stage.insert("", num,text='Stage'+stage_ui.var_stageID.get())
@@ -226,15 +234,51 @@ def indexUI(user_file,bills_file,stage_file):
 
     # 修改stage
     def updateStageDate():
-        pass
+        flagDao = stage.FlagDao(stage_file)
+        flagDao.deleteTagByName('Stage'+str(stage_ui.var_stageID.get()))
+        dom = xml.dom.minidom.parse(stage_file)
+        start_month = '0' + stage_ui.var_stageStartDate_m.get() if len(
+            str(stage_ui.var_stageStartDate_m.get())) == 1 else stage_ui.var_stageStartDate_m.get()
+        end_month = '0' + stage_ui.var_stage_endDate_m.get() if len(
+            str(stage_ui.var_stage_endDate_m.get())) == 1 else stage_ui.var_stage_endDate_m.get()
+        flagDao = stage.FlagDao(stage_file)
+        flagDao.addTag(stage_ui.var_stageName.get(), str(stage_ui.var_stageStartDate_y.get()) + '/' +
+                       start_month + '-' +
+                       str(stage_ui.var_stage_endDate_y.get()) + '/' +
+                       end_month,
+                       'Stage' + str(stage_ui.var_stageID.get())
+                       )
+        tk.messagebox.showinfo(title='提示', message='修改成功!')
+        wipe_data()  # 清空数据
+
+    # 显示stage
+    def show_stage_data():
+        try:
+            treexml = et.parse(Stage_file)
+            root = treexml.getroot()
+            for child in root:
+                myid = tree_stage.insert("", 0, text=child.attrib['id'])
+                for i in child:
+                    myidx1 = tree_stage.insert(myid, 0, text=i.text)
+                    for s in i:
+                        myidx2 = tree_stage.insert(myidx1, 0, text=s.text)
+        except Exception as e:
+            pass
 
     # 删除Stage
     def removeStageDate():
-        pass
+        flagDao = stage.FlagDao(stage_file)
+        flagDao.deleteTagByName('Stage'+str(stage_ui.var_stageID.get()))
+        items = tree_stage.get_children()
+        [tree_stage.delete(item) for item in items]
+        show_stage_data()
+        tk.messagebox.showinfo(title='提示',message='删除成功!')
+        wipe_data()
 
     # 添加收据单_添加当前层按钮
     def confirms():
         pass
+
     # 添加收据单_添加下一层
     value=''
     def confirm_next():
@@ -291,8 +335,17 @@ def indexUI(user_file,bills_file,stage_file):
 
     #选择stage节点
     def trefun(event):
+        stageUI()
+        data=stage.show_data(stage_file)
         global value
         value = event.widget.selection()
+        for idx in value:
+            stage_ui.var_stageID.set(tree_stage.item(idx)["text"][5:])
+            stage_ui.var_stageName.set(data[tree_stage.item(idx)["text"]][1])
+            stage_ui.var_stageStartDate_y.set(data[tree_stage.item(idx)["text"]][0][:4])
+            stage_ui.var_stageStartDate_m.set(data[tree_stage.item(idx)["text"]][0][5:7])
+            stage_ui.var_stage_endDate_y.set(data[tree_stage.item(idx)["text"]][0][8:12])
+            stage_ui.var_stage_endDate_m.set(data[tree_stage.item(idx)["text"]][0][13:])
 
     def raise_frame(frame):
         frame.tkraise()
@@ -305,7 +358,6 @@ def indexUI(user_file,bills_file,stage_file):
 
     def stageUI():
         raise_frame(stage_page)
-
 
 
     billsUI1 = tk.Button(bills_page, text='Event', width=8, command=billsUI, borderwidth=1).place(x=5,y=0)

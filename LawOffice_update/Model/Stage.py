@@ -1,5 +1,6 @@
 import xml.dom.minidom
 from xml.etree.ElementTree import ElementTree,Element
+from xml.dom import Node
 
 class Stage():
     def __init__(self,id,name,start_date_y,start_date_m,end_date_y,end_date_m):
@@ -18,11 +19,11 @@ class Stage():
         employee = dom.createElement('stage')
 
         # 添加属性
-        employee.setAttribute("id", 'Stage'+str(self.id))
         employee.setAttribute("name", self.name)
         employee.setAttribute("date", str(self.start_date_y)+'/'+str(self.start_date_m)+'-'+str(self.end_date_y)+'/'+str(self.end_date_m))
+        employee.setAttribute("id", 'Stage' + str(self.id))
         root.appendChild(employee)
-        f = open(file, 'a')
+        f = open(file, 'w')
         dom.writexml(f, addindent=' ', newl='\n')
         f.close()
 
@@ -141,12 +142,33 @@ class FlagDao():
             nodes[0].attrib['value'] = value
             XmlDao.saveAs(tree, self.__filename)
     #添加节点
-    def addTag(self,id,name,date):
+    def addTag(self,name,date,id):
         tree = XmlDao.openXml(self.__filename)
-        XmlDao.add_child_node([tree.getroot()],XmlDao.create_node('stage', {'id':id,'name':name,'date':date}))
+        XmlDao.add_child_node([tree.getroot()],XmlDao.create_node('stage', {'date':date,'name':name,'id':id}))
         XmlDao.saveAs(tree, self.__filename)
     #删除节点
     def deleteTagByName(self,id):
         tree = XmlDao.openXml(self.__filename)
         XmlDao.del_node_by_tagkeyvalue([tree.getroot()], 'stage', {'id':id})
         XmlDao.saveAs(tree, self.__filename)
+
+
+#点击stage获得相关数据
+def show_data(path):
+    dictAttr = {}
+    d={}
+    dom = xml.dom.minidom.parse(path)
+    root = dom.documentElement
+    for child in root.childNodes:
+        if child.nodeType == Node.ELEMENT_NODE:
+            listInfos = []
+            for key in child.attributes.keys():
+                attr = child.attributes[key]
+                listInfos.append( attr.value)
+            dictAttr[ attr.value]=listInfos
+    for i in dictAttr.values():
+        data=[]
+        data.append(i[0])
+        data.append(i[2])
+        d[str(i[1])]=data
+    return d
