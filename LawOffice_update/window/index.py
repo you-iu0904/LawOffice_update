@@ -29,6 +29,7 @@ from reportlab.pdfbase import pdfmetrics, ttfonts
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.cidfonts import UnicodeCIDFont
 from xml.etree import ElementTree as et
+import  xml.dom.minidom
 pdfmetrics.registerFont(UnicodeCIDFont('STSong-Light'))
 pdfmetrics.registerFont(TTFont('msyh', 'STSONG.TTF'))
 import Model.Attorney as attorney
@@ -165,32 +166,63 @@ def indexUI(user_file,bills_file,stage_file):
 
     # 添加Stage
     def addstageDate():
-        if stage_ui.var_stageID.get()=='' :
+        if stage_ui.var_stageID.get() == '':
             tk.messagebox.showinfo(title='提示', message='请填写编号!')
-        elif uti.check(stage_ui.var_stageID.get())!=True:
-            tk.messagebox.showinfo(title='提示',message='编号只能为数字!')
-        elif stage_ui.var_stageName.get()=='':
-            tk.messagebox.showinfo(title='提示',message='请填写名称!')
-        elif stage_ui.var_stageStartDate_y.get()=='' or stage_ui.var_stageStartDate_m.get()=='' or stage_ui.var_stage_endDate_y.get()=='' or  stage_ui.var_stage_endDate_m.get()=='':
-            tk.messagebox.showinfo(title='提示',message='请填写日期!')
-        elif uti.check(stage_ui.var_stageStartDate_y.get())!=True or uti.check(stage_ui.var_stageStartDate_m.get())!=True or uti.check(stage_ui.var_stage_endDate_y.get())!=True or uti.check(stage_ui.var_stage_endDate_m.get())!=True:
-            tk.messagebox.showinfo(title='提示',message='日期只能填写数字,请重新填写!')
-        elif len(stage_ui.var_stageStartDate_y.get())<4 or int(stage_ui.var_stageStartDate_m.get())>12 or len(stage_ui.var_stage_endDate_y.get())<4 or int(stage_ui.var_stage_endDate_m.get())>12:
-            tk.messagebox.showinfo(title='提示',message='日期格式错误请重新填写!')
-        elif int(stage_ui.var_stageStartDate_y.get()+('0' + stage_ui.var_stageStartDate_m.get() if len(
-                stage_ui.var_stageStartDate_m.get()) == 1 else stage_ui.var_stageStartDate_m.get())) >  int( stage_ui.var_stage_endDate_y.get()+('0' + stage_ui.var_stage_endDate_m.get() if len(
-            stage_ui.var_stage_endDate_m.get())==1 else stage_ui.var_stage_endDate_m.get())):
-            tk.messagebox.showinfo(title='提示',message='开始时间不能大于结束时间!')
+
+        elif uti.check(stage_ui.var_stageID.get()) != True:
+            tk.messagebox.showinfo(title='提示', message='编号只能为数字!')
+
+        elif stage_ui.var_stageID.get() == '':
+            tk.messagebox.showinfo(title='提示', message='请填写名称!')
+
+        elif stage_ui.var_stageStartDate_y.get() == '' or stage_ui.var_stageStartDate_m.get() == '' or stage_ui.var_stage_endDate_y.get() == '' or stage_ui.var_stage_endDate_m.get() == '':
+            tk.messagebox.showinfo(title='提示', message='请填写日期!')
+
+        elif uti.check(stage_ui.var_stageStartDate_y.get()) != True or uti.check(
+                stage_ui.var_stageStartDate_m.get()) != True or uti.check(
+                stage_ui.var_stage_endDate_y.get()) != True or uti.check(stage_ui.var_stage_endDate_m.get()) != True:
+            tk.messagebox.showinfo(title='提示', message='日期只能填写数字,请重新填写!')
+
+        elif len(stage_ui.var_stageStartDate_y.get()) < 4 or int(stage_ui.var_stageStartDate_m.get()) > 12 or len(
+                stage_ui.var_stage_endDate_y.get()) < 4 or int(stage_ui.var_stage_endDate_m.get()) > 12:
+            tk.messagebox.showinfo(title='提示', message='日期格式错误请重新填写!')
+
+        elif int(stage_ui.var_stageStartDate_y.get() + ('0' + stage_ui.var_stageStartDate_m.get() if len(
+                stage_ui.var_stageStartDate_m.get()) == 1 else stage_ui.var_stageStartDate_m.get())) > int(
+            stage_ui.var_stage_endDate_y.get() + ('0' + stage_ui.var_stage_endDate_m.get() if len(
+                stage_ui.var_stage_endDate_m.get()) == 1 else stage_ui.var_stage_endDate_m.get())):
+            tk.messagebox.showinfo(title='提示', message='开始时间不能大于结束时间!')
+
         else:
-            stage_obj=stage.Stage(stage_ui.var_stageID.get(),
-                                  stage_ui.var_stageName.get(),
-                                  stage_ui.var_stageStartDate_y.get(),
-                                  stage_ui.var_stageStartDate_m.get(),
-                                  stage_ui.var_stage_endDate_y.get(),
-                                  stage_ui.var_stage_endDate_m.get()
-                                  )
-            stage_obj.save(stage_file)
-            tree_stage.insert("", 0,text='Stage'+stage_ui.var_stageID.get())
+            try:
+                dom = xml.dom.minidom.parse(stage_file)
+                flagDao = stage.FlagDao(stage_file)
+                flagDao.addTag('Stage'+str(stage_ui.var_stageID.get()),stage_ui.var_stageID.get(),str(stage_ui.var_stageStartDate_y.get())+'/'+
+                                          str(stage_ui.var_stageStartDate_m.get())+'-'+
+                                          str(stage_ui.var_stage_endDate_y.get())+'/'+
+                                          str(stage_ui.var_stage_endDate_m.get()))
+                tree_stage.insert("", num, text='Stage' + stage_ui.var_stageID.get())
+                tk.messagebox.showinfo(title='提示',message='添加成功!')
+                wipe_data()#清空数据
+            except xml.parsers.expat.ExpatError as e:
+                    stage_obj=stage.Stage(stage_ui.var_stageID.get(),
+                                          stage_ui.var_stageName.get(),
+                                          stage_ui.var_stageStartDate_y.get(),
+                                          stage_ui.var_stageStartDate_m.get(),
+                                          stage_ui.var_stage_endDate_y.get(),
+                                          stage_ui.var_stage_endDate_m.get()
+                                          )
+                    stage_obj.save(stage_file)
+                    tree_stage.insert("", num,text='Stage'+stage_ui.var_stageID.get())
+                    tk.messagebox.showinfo(title='提示', message='添加成功!')
+                    wipe_data()  # 清空数据
+    def wipe_data():
+        stage_ui.var_stageID.set('')
+        stage_ui.var_stageName.set('')
+        stage_ui.var_stageStartDate_y.set('')
+        stage_ui.var_stageStartDate_m.set('')
+        stage_ui.var_stage_endDate_y.set('')
+        stage_ui.var_stage_endDate_m.set('')
 
     # 修改stage
     def updateStageDate():
@@ -242,8 +274,8 @@ def indexUI(user_file,bills_file,stage_file):
     def exita():
         pass
 
-        # 将值赋值到相关控件中
 
+    # 将值赋值到相关控件中
     def callUpdateUser():
         try:
             user = lbUserss.get(lbUserss.curselection())
