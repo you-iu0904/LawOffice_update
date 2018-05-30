@@ -348,6 +348,9 @@ def indexUI(user_file,bills_file,stage_file):
     def exita():
         pass
 
+    def choice (event):
+        global value
+        value=event.widget.selection()
 
     # 将值赋值到相关控件中
     def callUpdateUser():
@@ -365,11 +368,10 @@ def indexUI(user_file,bills_file,stage_file):
 
     #选择stage节点
     def trefun(event):
-        global value
         stageUI()
         data=stage.show_data(stage_file)
-        value = event.widget.selection()
-        for idx in value:
+        values = event.widget.selection()
+        for idx in values:
             stage_ui.var_stageID.set(tree_stage.item(idx)["text"][5:])
             stage_ui.var_stageName.set(data[tree_stage.item(idx)["text"]][1])
             stage_ui.var_stageStartDate_y.set(data[tree_stage.item(idx)["text"]][0][:4])
@@ -448,8 +450,6 @@ def indexUI(user_file,bills_file,stage_file):
     removeUser = tk.Button(rests_page, text='删除', width=5, command=removeUser)
     removeUser.place(x=160, y=220)
     updateUser.place(x=240, y=220)
-    def cs(event):
-        print(event.widget.selection())
 
     #stage
     vbar = ttk.Scrollbar(window, orient=VERTICAL, command=tree_stage.yview)
@@ -457,7 +457,7 @@ def indexUI(user_file,bills_file,stage_file):
     # myidx1 = tree_stage.insert(myid, 0, text='conference within stage1', values='2')
     # myidx2 = tree_stage.insert(myid, 1,  text='with client  ', values='3')
     tree_stage.bind("<Double-Button-1>", trefun)
-    tree_stage.bind("<Button-1>", cs)
+    tree_stage.bind("<Button-1>", choice)
     tree_stage.place(x=530, y=166)
 
 

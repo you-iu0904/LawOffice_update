@@ -141,11 +141,13 @@ class FlagDao():
         if len(nodes) > 0:
             nodes[0].attrib['value'] = value
             XmlDao.saveAs(tree, self.__filename)
+
     #添加节点
     def addTag(self,name,date,id):
         tree = XmlDao.openXml(self.__filename)
         XmlDao.add_child_node([tree.getroot()],XmlDao.create_node('stage', {'date':date,'name':name,'id':id}))
         XmlDao.saveAs(tree, self.__filename)
+
     #删除节点
     def deleteTagByName(self,id):
         tree = XmlDao.openXml(self.__filename)
