@@ -234,22 +234,50 @@ def indexUI(user_file,bills_file,stage_file):
 
     # 修改stage
     def updateStageDate():
-        flagDao = stage.FlagDao(stage_file)
-        flagDao.deleteTagByName('Stage'+str(stage_ui.var_stageID.get()))
-        dom = xml.dom.minidom.parse(stage_file)
-        start_month = '0' + stage_ui.var_stageStartDate_m.get() if len(
-            str(stage_ui.var_stageStartDate_m.get())) == 1 else stage_ui.var_stageStartDate_m.get()
-        end_month = '0' + stage_ui.var_stage_endDate_m.get() if len(
-            str(stage_ui.var_stage_endDate_m.get())) == 1 else stage_ui.var_stage_endDate_m.get()
-        flagDao = stage.FlagDao(stage_file)
-        flagDao.addTag(stage_ui.var_stageName.get(), str(stage_ui.var_stageStartDate_y.get()) + '/' +
-                       start_month + '-' +
-                       str(stage_ui.var_stage_endDate_y.get()) + '/' +
-                       end_month,
-                       'Stage' + str(stage_ui.var_stageID.get())
-                       )
-        tk.messagebox.showinfo(title='提示', message='修改成功!')
-        wipe_data()  # 清空数据
+
+        if stage_ui.var_stageID.get() == '':
+            tk.messagebox.showinfo(title='提示', message='请填写编号!')
+
+        elif uti.check(stage_ui.var_stageID.get()) != True:
+            tk.messagebox.showinfo(title='提示', message='编号只能为数字!')
+
+        elif stage_ui.var_stageID.get() == '':
+            tk.messagebox.showinfo(title='提示', message='请填写名称!')
+
+        elif stage_ui.var_stageStartDate_y.get() == '' or stage_ui.var_stageStartDate_m.get() == '' or stage_ui.var_stage_endDate_y.get() == '' or stage_ui.var_stage_endDate_m.get() == '':
+            tk.messagebox.showinfo(title='提示', message='请填写日期!')
+
+        elif uti.check(stage_ui.var_stageStartDate_y.get()) != True or uti.check(
+                stage_ui.var_stageStartDate_m.get()) != True or uti.check(
+                stage_ui.var_stage_endDate_y.get()) != True or uti.check(stage_ui.var_stage_endDate_m.get()) != True:
+            tk.messagebox.showinfo(title='提示', message='日期只能填写数字,请重新填写!')
+
+        elif len(stage_ui.var_stageStartDate_y.get()) < 4 or int(stage_ui.var_stageStartDate_m.get()) > 12 or len(
+                stage_ui.var_stage_endDate_y.get()) < 4 or int(stage_ui.var_stage_endDate_m.get()) > 12:
+            tk.messagebox.showinfo(title='提示', message='日期格式错误请重新填写!')
+
+        elif int(stage_ui.var_stageStartDate_y.get() + ('0' + stage_ui.var_stageStartDate_m.get() if len(
+                stage_ui.var_stageStartDate_m.get()) == 1 else stage_ui.var_stageStartDate_m.get())) > int(
+            stage_ui.var_stage_endDate_y.get() + ('0' + stage_ui.var_stage_endDate_m.get() if len(
+                stage_ui.var_stage_endDate_m.get()) == 1 else stage_ui.var_stage_endDate_m.get())):
+            tk.messagebox.showinfo(title='提示', message='开始时间不能大于结束时间!')
+        else:
+            flagDao = stage.FlagDao(stage_file)
+            flagDao.deleteTagByName('Stage'+str(stage_ui.var_stageID.get()))
+            dom = xml.dom.minidom.parse(stage_file)
+            start_month = '0' + stage_ui.var_stageStartDate_m.get() if len(
+                str(stage_ui.var_stageStartDate_m.get())) == 1 else stage_ui.var_stageStartDate_m.get()
+            end_month = '0' + stage_ui.var_stage_endDate_m.get() if len(
+                str(stage_ui.var_stage_endDate_m.get())) == 1 else stage_ui.var_stage_endDate_m.get()
+            flagDao = stage.FlagDao(stage_file)
+            flagDao.addTag(stage_ui.var_stageName.get(), str(stage_ui.var_stageStartDate_y.get()) + '/' +
+                           start_month + '-' +
+                           str(stage_ui.var_stage_endDate_y.get()) + '/' +
+                           end_month,
+                           'Stage' + str(stage_ui.var_stageID.get())
+                           )
+            tk.messagebox.showinfo(title='提示', message='修改成功!')
+            wipe_data()  # 清空数据
 
     # 显示stage
     def show_stage_data():
@@ -278,6 +306,8 @@ def indexUI(user_file,bills_file,stage_file):
     # 添加收据单_添加当前层按钮
     def confirms():
         pass
+
+
 
     # 添加收据单_添加下一层
     value=''
@@ -335,9 +365,9 @@ def indexUI(user_file,bills_file,stage_file):
 
     #选择stage节点
     def trefun(event):
+        global value
         stageUI()
         data=stage.show_data(stage_file)
-        global value
         value = event.widget.selection()
         for idx in value:
             stage_ui.var_stageID.set(tree_stage.item(idx)["text"][5:])
@@ -418,13 +448,16 @@ def indexUI(user_file,bills_file,stage_file):
     removeUser = tk.Button(rests_page, text='删除', width=5, command=removeUser)
     removeUser.place(x=160, y=220)
     updateUser.place(x=240, y=220)
+    def cs(event):
+        print(event.widget.selection())
 
     #stage
     vbar = ttk.Scrollbar(window, orient=VERTICAL, command=tree_stage.yview)
     # myid = tree_stage.insert("", 0, 'Stage1', text='Stage1', values='1')
     # myidx1 = tree_stage.insert(myid, 0, text='conference within stage1', values='2')
     # myidx2 = tree_stage.insert(myid, 1,  text='with client  ', values='3')
-    tree_stage.bind("<<TreeviewSelect>>", trefun)
+    tree_stage.bind("<Double-Button-1>", trefun)
+    tree_stage.bind("<Button-1>", cs)
     tree_stage.place(x=530, y=166)
 
 
