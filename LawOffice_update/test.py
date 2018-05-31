@@ -1,24 +1,40 @@
-from xml.etree.ElementTree import ElementTree, Element
-
-
-
-
-if __name__ == "__main__":
-    # 1. 读取xml文件
-    tree = read_xml("emplist.xml")
-
-    # 2. 属性修改
-    # A. 找到父节点
-    nodes = find_nodes(tree, "stage")
-    # # B. 通过属性准确定位子节点
-    result_nodes = get_node_by_keyvalue(nodes, {"id": "Stage2"})
-
-    # A.新建节点
-    a = create_node("person", {"age": "15", "money": "200000"}, None)
-    # B.插入到父节点之下
-    add_child_node(result_nodes, a)
-    # 6. 输出到结果文件
-    write_xml(tree, "out.xml")
+from tkinter import *
+root = Tk()
+root.title('试试文本框右键菜单')
+root.resizable(False, False)
+root.geometry("300x100+200+20")
+Label(root, text='下面是一个刚刚被生成的文本框，试试操作吧').pack(side="top")
+Label(root).pack(side="top")
+show = StringVar()
+Entry = Entry(root, textvariable=show, width="30")
+Entry.pack()
+class section:
+    def onPaste(self):
+        try:
+            self.text = root.clipboard_get()
+        except TclError:
+            pass
+        show.set(str(self.text))
+    def onCopy(self):
+        self.text = Entry.get()
+        root.clipboard_append(self.text)
+    def onCut(self):
+        self.onCopy()
+        try:
+            Entry.delete('sel.first', 'sel.last')
+        except TclError:
+            pass
+section = section()
+menu = Menu(root, tearoff=0)
+menu.add_command(label="复制", command=section.onCopy)
+menu.add_separator()
+menu.add_command(label="粘贴", command=section.onPaste)
+menu.add_separator()
+menu.add_command(label="剪切", command=section.onCut)
+def popupmenu(event):
+    menu.post(event.x_root, event.y_root)
+Entry.bind("<Button-3>", popupmenu)
+root.mainloop()
 
 
 

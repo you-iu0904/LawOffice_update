@@ -380,14 +380,14 @@ def indexUI(user_file,bills_file,stage_file):
         except Exception as e:
             pass
 
-    #选择stage节点
+    #查看节点的数据
     def trefun(event):
         stageUI()
         data=stage.show_data(stage_file)
         values = event.widget.selection()
         for idx in values:
             stage_ui.var_stageID.set(tree_stage.item(idx)["text"][5:])
-            stage_ui.var_stageName.set(data[tree_stage.item(idx)["text"]][1])
+            stage_ui.var_stageName.set(data[tree_stage.item(idx)["text"]][2])
             stage_ui.var_stageStartDate_y.set(data[tree_stage.item(idx)["text"]][0][:4])
             stage_ui.var_stageStartDate_m.set(data[tree_stage.item(idx)["text"]][0][5:7])
             stage_ui.var_stage_endDate_y.set(data[tree_stage.item(idx)["text"]][0][8:12])
@@ -464,16 +464,21 @@ def indexUI(user_file,bills_file,stage_file):
     removeUser = tk.Button(rests_page, text='删除', width=5, command=removeUser)
     removeUser.place(x=160, y=220)
     updateUser.place(x=240, y=220)
+    def update_node():
+        print('修改')
 
+
+    def _right_key(event):
+        menubar = Menu(window, tearoff=False)
+        menubar.add_command(label='修改',command=update_node)
+        menubar.add_command(label='删除')
+        menubar.post(event.x_root, event.y_root)
     #stage
     vbar = ttk.Scrollbar(window, orient=VERTICAL, command=tree_stage.yview)
-    # myid = tree_stage.insert("", 0, 'Stage1', text='Stage1', values='1')
-    # myidx1 = tree_stage.insert(myid, 0, text='conference within stage1', values='2')
-    # myidx2 = tree_stage.insert(myid, 1,  text='with client  ', values='3')
     tree_stage.bind("<Double-Button-1>", trefun)
     tree_stage.bind("<<TreeviewSelect>>", choice)
     tree_stage.place(x=530, y=166)
-
+    tree_stage.bind("<Button-3>", _right_key)
 
     # 导航条
     men = tk.Menu(window)
