@@ -83,10 +83,10 @@ def indexUI(user_file,bills_file,stage_file):
             myid=tree_stage.insert("", num, text=child.attrib['id'])
             num+=1
             for i in child:
-                myidx1 = tree_stage.insert(myid, num1, text=i.text)
+                myidx1 = tree_stage.insert(myid, num1, text=i.attrib['type'])
                 num1+=1
                 for s in i:
-                    myidx2 = tree_stage.insert(myidx1, num2, text=s.text)
+                    myidx2 = tree_stage.insert(myidx1, num2, text=s.attrib['type'])
                     num2+=1
     except Exception as e:
         pass
@@ -307,13 +307,24 @@ def indexUI(user_file,bills_file,stage_file):
     def confirms():
         pass
 
-
-
     # 添加收据单_添加下一层
     value=''
+    valueobj=''
     def confirm_next():
         global value
-        tree_stage.insert(value,0,text=bills_ui.var_bills_type.get())
+        global valueobj
+        print(valueobj)
+        tree = stage.read_xml(stage_file)
+        nodes = stage.find_nodes(tree, "stage")
+        result_nodes = stage.get_node_by_keyvalue(nodes, {"id": value})
+
+        a = stage.create_node("type", {'type':bills_ui.var_bills_type.get()}, None)
+        # B.插入到父节点之下
+        stage.add_child_node(result_nodes, a)
+        # 6. 输出到结果文件
+        stage.write_xml(tree, stage_file)
+        tree_stage.insert(valueobj,0,text=bills_ui.var_bills_type.get())
+
     # 删除单据
     def removeBills():
         pass
@@ -350,7 +361,10 @@ def indexUI(user_file,bills_file,stage_file):
 
     def choice (event):
         global value
-        value=event.widget.selection()
+        global valueobj
+        valueobj=event.widget.selection()
+        for idx in valueobj:
+            value=tree_stage.item(idx)["text"]
 
     # 将值赋值到相关控件中
     def callUpdateUser():
@@ -457,7 +471,7 @@ def indexUI(user_file,bills_file,stage_file):
     # myidx1 = tree_stage.insert(myid, 0, text='conference within stage1', values='2')
     # myidx2 = tree_stage.insert(myid, 1,  text='with client  ', values='3')
     tree_stage.bind("<Double-Button-1>", trefun)
-    tree_stage.bind("<Button-1>", choice)
+    tree_stage.bind("<<TreeviewSelect>>", choice)
     tree_stage.place(x=530, y=166)
 
 

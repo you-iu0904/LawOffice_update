@@ -24,8 +24,10 @@ class Stage():
         employee.setAttribute("id", 'Stage' + str(self.id))
         root.appendChild(employee)
         f = open(file, 'w')
-        dom.writexml(f, addindent=' ', newl='\n')
+        dom.writexml(f, addindent=' ', newl='')
         f.close()
+
+
 
 class XmlDao():
     @staticmethod
@@ -154,23 +156,65 @@ class FlagDao():
         XmlDao.del_node_by_tagkeyvalue([tree.getroot()], 'stage', {'id':id})
         XmlDao.saveAs(tree, self.__filename)
 
+# 读取并解析xml文件   in_path: xml路径
+def read_xml(in_path):
+    tree = ElementTree()
+    tree.parse(in_path)
+    return tree
+
+# 将xml文件写出 tree: xml树  out_path: 写出路径
+def write_xml(tree, out_path):
+    tree.write(out_path)
+
+# 判断某个节点是否包含所有传入参数属性  node: 节点  kv_map: 属性及属性值组成的map
+def if_match(node, kv_map):
+    for key in kv_map:
+        if node.get(key) != kv_map.get(key):
+            return False
+    return True
+
+# 查找某个路径匹配的所有节点 tree: xml树  path: 节点路径
+def find_nodes(tree, path):
+    return tree.findall(path)
+
+# 根据属性及属性值定位符合的节点，返回节点 nodelist: 节点列表  kv_map: 匹配属性及属性值map
+def get_node_by_keyvalue(nodelist, kv_map):
+    result_nodes = []
+    for node in nodelist:
+        if if_match(node, kv_map):
+            result_nodes.append(node)
+    return result_nodes
+
+
+# 新造一个节点  tag:节点标签  property_map:属性及属性值map content: 节点闭合标签里的文本内容
+def create_node(tag, property_map, content):
+    element = Element(tag, property_map)
+    element.text = content
+    return element
+
+# 给一个节点添加子节点  nodelist: 节点列表 element: 子节点
+def add_child_node(nodelist, element):
+    for node in nodelist:
+        node.append(element)
+
 
 #点击stage获得相关数据
 def show_data(path):
-    dictAttr = {}
-    d={}
     dom = xml.dom.minidom.parse(path)
     root = dom.documentElement
+    dictAttr = {}
+    listInfos = []
+
     for child in root.childNodes:
+        s=[]
         if child.nodeType == Node.ELEMENT_NODE:
-            listInfos = []
             for key in child.attributes.keys():
                 attr = child.attributes[key]
-                listInfos.append( attr.value)
-            dictAttr[ attr.value]=listInfos
-    for i in dictAttr.values():
-        data=[]
-        data.append(i[0])
-        data.append(i[2])
-        d[str(i[1])]=data
-    return d
+                data = attr.value
+                s.append(data)
+        listInfos.append(s)
+
+    listInfos.pop(0)
+    for i in listInfos:
+        dictAttr[str(i[1])]=i
+    return dictAttr
