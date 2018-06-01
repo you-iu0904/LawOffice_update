@@ -43,7 +43,11 @@ num = 0
 num1 = 0
 num2 = 0
 
+value = ''
+valueobj = ''
+
 def indexUI(user_file,bills_file,stage_file):
+
     global num
     global num1
     global num2
@@ -60,6 +64,8 @@ def indexUI(user_file,bills_file,stage_file):
     User_file=user_file
     Bills_file=bills_file
     Stage_file=stage_file
+
+
 
     lbUserss = tk.Listbox(window, height=9, width=24)
 
@@ -148,6 +154,7 @@ def indexUI(user_file,bills_file,stage_file):
             tk.messagebox.showinfo(title='提示', message='修改成功!')
             user_ui.clear_data()
             userUI()
+
     #删除用户
     def removeUser():
         user_dict.pop(user_ui.var_usernames.get())
@@ -173,25 +180,19 @@ def indexUI(user_file,bills_file,stage_file):
     def addstageDate():
         if stage_ui.var_stageID.get() == '':
             tk.messagebox.showinfo(title='提示', message='请填写编号!')
-
         elif uti.check(stage_ui.var_stageID.get()) != True:
             tk.messagebox.showinfo(title='提示', message='编号只能为数字!')
-
         elif stage_ui.var_stageID.get() == '':
             tk.messagebox.showinfo(title='提示', message='请填写名称!')
-
         elif stage_ui.var_stageStartDate_y.get() == '' or stage_ui.var_stageStartDate_m.get() == '' or stage_ui.var_stage_endDate_y.get() == '' or stage_ui.var_stage_endDate_m.get() == '':
             tk.messagebox.showinfo(title='提示', message='请填写日期!')
-
         elif uti.check(stage_ui.var_stageStartDate_y.get()) != True or uti.check(
                 stage_ui.var_stageStartDate_m.get()) != True or uti.check(
                 stage_ui.var_stage_endDate_y.get()) != True or uti.check(stage_ui.var_stage_endDate_m.get()) != True:
             tk.messagebox.showinfo(title='提示', message='日期只能填写数字,请重新填写!')
-
         elif len(stage_ui.var_stageStartDate_y.get()) < 4 or int(stage_ui.var_stageStartDate_m.get()) > 12 or len(
                 stage_ui.var_stage_endDate_y.get()) < 4 or int(stage_ui.var_stage_endDate_m.get()) > 12:
             tk.messagebox.showinfo(title='提示', message='日期格式错误请重新填写!')
-
         elif int(stage_ui.var_stageStartDate_y.get() + ('0' + stage_ui.var_stageStartDate_m.get() if len(
                 stage_ui.var_stageStartDate_m.get()) == 1 else stage_ui.var_stageStartDate_m.get())) > int(
             stage_ui.var_stage_endDate_y.get() + ('0' + stage_ui.var_stage_endDate_m.get() if len(
@@ -234,28 +235,21 @@ def indexUI(user_file,bills_file,stage_file):
 
     # 修改stage
     def updateStageDate():
-
         if stage_ui.var_stageID.get() == '':
             tk.messagebox.showinfo(title='提示', message='请填写编号!')
-
         elif uti.check(stage_ui.var_stageID.get()) != True:
             tk.messagebox.showinfo(title='提示', message='编号只能为数字!')
-
         elif stage_ui.var_stageID.get() == '':
             tk.messagebox.showinfo(title='提示', message='请填写名称!')
-
         elif stage_ui.var_stageStartDate_y.get() == '' or stage_ui.var_stageStartDate_m.get() == '' or stage_ui.var_stage_endDate_y.get() == '' or stage_ui.var_stage_endDate_m.get() == '':
             tk.messagebox.showinfo(title='提示', message='请填写日期!')
-
         elif uti.check(stage_ui.var_stageStartDate_y.get()) != True or uti.check(
                 stage_ui.var_stageStartDate_m.get()) != True or uti.check(
                 stage_ui.var_stage_endDate_y.get()) != True or uti.check(stage_ui.var_stage_endDate_m.get()) != True:
             tk.messagebox.showinfo(title='提示', message='日期只能填写数字,请重新填写!')
-
         elif len(stage_ui.var_stageStartDate_y.get()) < 4 or int(stage_ui.var_stageStartDate_m.get()) > 12 or len(
                 stage_ui.var_stage_endDate_y.get()) < 4 or int(stage_ui.var_stage_endDate_m.get()) > 12:
             tk.messagebox.showinfo(title='提示', message='日期格式错误请重新填写!')
-
         elif int(stage_ui.var_stageStartDate_y.get() + ('0' + stage_ui.var_stageStartDate_m.get() if len(
                 stage_ui.var_stageStartDate_m.get()) == 1 else stage_ui.var_stageStartDate_m.get())) > int(
             stage_ui.var_stage_endDate_y.get() + ('0' + stage_ui.var_stage_endDate_m.get() if len(
@@ -278,18 +272,23 @@ def indexUI(user_file,bills_file,stage_file):
                            )
             tk.messagebox.showinfo(title='提示', message='修改成功!')
             wipe_data()  # 清空数据
-
     # 显示stage
     def show_stage_data():
+        num=0
+        num1=0
+        num2 = 0
         try:
             treexml = et.parse(Stage_file)
             root = treexml.getroot()
             for child in root:
-                myid = tree_stage.insert("", 0, text=child.attrib['id'])
+                myid = tree_stage.insert("", num, text=child.attrib['id'])
+                num+=1
                 for i in child:
-                    myidx1 = tree_stage.insert(myid, 0, text=i.text)
+                    myidx1 = tree_stage.insert(myid, num1, text=i.attrib['type'])
+                    num1+=1
                     for s in i:
-                        myidx2 = tree_stage.insert(myidx1, 0, text=s.text)
+                        myidx2 = tree_stage.insert(myidx1, num2, text=s.attrib['type'])
+                        num2+=1
         except Exception as e:
             pass
 
@@ -307,13 +306,11 @@ def indexUI(user_file,bills_file,stage_file):
     def confirms():
         pass
 
+
     # 添加收据单_添加下一层
-    value=''
-    valueobj=''
     def confirm_next():
         global value
         global valueobj
-        print(valueobj)
         tree = stage.read_xml(stage_file)
         nodes = stage.find_nodes(tree, "stage")
         result_nodes = stage.get_node_by_keyvalue(nodes, {"id": value})
@@ -405,6 +402,61 @@ def indexUI(user_file,bills_file,stage_file):
     def stageUI():
         raise_frame(stage_page)
 
+    var_update_node = tk.StringVar()#修改节点的数据
+
+    #删除子节点
+    def delete_node():
+
+        tree = stage.read_xml(stage_file)
+        del_parent_nodes = stage.find_nodes(tree, "stage")
+        # 准确定位子节点并删除之
+        target_del_node = stage.del_node_by_tagkeyvalue(del_parent_nodes, "type", {"type": value})
+        stage.write_xml(tree, stage_file)
+        tk.messagebox.showinfo(title='提示',message='删除成功!')
+        items = tree_stage.get_children()
+        [tree_stage.delete(item) for item in items]
+        show_stage_data()
+
+    #修改子节点弹出修改窗口
+    def update_node():
+
+        # 确定_修改子节点
+        def confirm_add_node():
+            # 1. 读取xml文件
+            tree = stage.read_xml(stage_file)
+            nodes = stage.find_nodes(tree, "stage/type")
+            result_nodes = stage.get_node_by_keyvalue(nodes, {"type": value})
+            stage.change_node_properties(result_nodes, {"type":var_update_node.get()})
+            stage.write_xml(tree, stage_file)
+            tk.messagebox.showinfo(title='提示',message='修改成功!')
+            var_update_node.set('')
+            root.destroy()
+            items = tree_stage.get_children()
+            [tree_stage.delete(item) for item in items]
+            show_stage_data()
+
+        # 取消_修改子节点
+        def cancel_add_node():
+            root.destroy()
+
+        root = tk.Toplevel(window)
+        root.geometry('270x100')
+        update_la = tk.Label(root, text='Type:').place(x=20, y=20)
+        update_en = tk.Entry(root, textvariable=var_update_node)
+        update_en.place(x=70, y=20)
+        confirm = tk.Button(root,command=confirm_add_node,text='确定',width=5)
+        confirm.place(x=50,y=60)
+        cancel = tk.Button(root,command=cancel_add_node,text='取消',width=5)
+        cancel.place(x=100,y=60)
+        root.resizable(False, False)
+        root.mainloop()
+
+    #鼠标右键菜单
+    def _right_key(event):
+        menubar = Menu(window, tearoff=False)
+        menubar.add_command(label='修改',command = update_node)
+        menubar.add_command(label='删除',command = delete_node)
+        menubar.post(event.x_root, event.y_root)
 
     billsUI1 = tk.Button(bills_page, text='Event', width=8, command=billsUI, borderwidth=1).place(x=5,y=0)
     userUI1  = tk.Button(bills_page, text='FeeEarner', width=8, command=userUI, borderwidth=1).place(x=80,y=0)
@@ -464,15 +516,7 @@ def indexUI(user_file,bills_file,stage_file):
     removeUser = tk.Button(rests_page, text='删除', width=5, command=removeUser)
     removeUser.place(x=160, y=220)
     updateUser.place(x=240, y=220)
-    def update_node():
-        print('修改')
 
-
-    def _right_key(event):
-        menubar = Menu(window, tearoff=False)
-        menubar.add_command(label='修改',command=update_node)
-        menubar.add_command(label='删除')
-        menubar.post(event.x_root, event.y_root)
     #stage
     vbar = ttk.Scrollbar(window, orient=VERTICAL, command=tree_stage.yview)
     tree_stage.bind("<Double-Button-1>", trefun)

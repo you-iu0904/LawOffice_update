@@ -122,17 +122,7 @@ class FlagDao():
             self.__filename = filename
         else:
             self.__filename = filename
-    #获取节点属性
-    def getValueByName(self,id):
-        tree = XmlDao.openXml(self.__filename)
 
-        if tree is None:
-            return None
-        nodes = XmlDao.find_nodes(tree, 'stage')
-        nodes = XmlDao.get_node_by_keyvalue(nodes, {'id':id})
-        if len(nodes) > 0:
-            return nodes[0].attrib['value']
-        return None
     #设置节点
     def setValueByName(self,name,value):
         tree = XmlDao.openXml(self.__filename)
@@ -156,11 +146,29 @@ class FlagDao():
         XmlDao.del_node_by_tagkeyvalue([tree.getroot()], 'stage', {'id':id})
         XmlDao.saveAs(tree, self.__filename)
 
+    #删除节点
+    def deleteChildNode(self,type):
+        tree = XmlDao.openXml(self.__filename)
+        XmlDao.del_node_by_tagkeyvalue([tree.getroot()], 's', {'type':type})
+        XmlDao.saveAs(tree, self.__filename)
+
 # 读取并解析xml文件   in_path: xml路径
 def read_xml(in_path):
     tree = ElementTree()
     tree.parse(in_path)
     return tree
+
+def change_node_properties(nodelist, kv_map, is_delete=False):
+    '''''修改/增加 /删除 节点的属性及属性值
+       nodelist: 节点列表
+       kv_map:属性及属性值map'''
+    for node in nodelist:
+        for key in kv_map:
+            if is_delete:
+                if key in node.attrib:
+                    del node.attrib[key]
+            else:
+                node.set(key, kv_map.get(key))
 
 # 将xml文件写出 tree: xml树  out_path: 写出路径
 def write_xml(tree, out_path):
@@ -196,6 +204,13 @@ def create_node(tag, property_map, content):
 def add_child_node(nodelist, element):
     for node in nodelist:
         node.append(element)
+
+def del_node_by_tagkeyvalue(nodelist, tag, kv_map):
+    for parent_node in nodelist:
+        children = parent_node.getchildren()
+        for child in children:
+            if child.tag == tag and if_match(child, kv_map):
+                parent_node.remove(child)
 
 
 #点击stage获得相关数据
