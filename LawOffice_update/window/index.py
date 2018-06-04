@@ -89,10 +89,10 @@ def indexUI(user_file,bills_file,stage_file):
             myid=tree_stage.insert("", num, text=child.attrib['id'])
             num+=1
             for i in child:
-                myidx1 = tree_stage.insert(myid, num1, text=i.attrib['type'])
+                myidx1 = tree_stage.insert(myid, num1, text=i.attrib['id'])
                 num1+=1
                 for s in i:
-                    myidx2 = tree_stage.insert(myidx1, num2, text=s.attrib['type'])
+                    myidx2 = tree_stage.insert(myidx1, num2, text=s.attrib['id'])
                     num2+=1
     except Exception as e:
         pass
@@ -178,6 +178,7 @@ def indexUI(user_file,bills_file,stage_file):
 
     # 添加Stage
     def addstageDate():
+
         if stage_ui.var_stageID.get() == '':
             tk.messagebox.showinfo(title='提示', message='请填写编号!')
         elif uti.check(stage_ui.var_stageID.get()) != True:
@@ -272,6 +273,7 @@ def indexUI(user_file,bills_file,stage_file):
                            )
             tk.messagebox.showinfo(title='提示', message='修改成功!')
             wipe_data()  # 清空数据
+
     # 显示stage
     def show_stage_data():
         num=0
@@ -284,10 +286,10 @@ def indexUI(user_file,bills_file,stage_file):
                 myid = tree_stage.insert("", num, text=child.attrib['id'])
                 num+=1
                 for i in child:
-                    myidx1 = tree_stage.insert(myid, num1, text=i.attrib['type'])
+                    myidx1 = tree_stage.insert(myid, num1, text=i.attrib['id'])
                     num1+=1
                     for s in i:
-                        myidx2 = tree_stage.insert(myidx1, num2, text=s.attrib['type'])
+                        myidx2 = tree_stage.insert(myidx1, num2, text=s.attrib['id'])
                         num2+=1
         except Exception as e:
             pass
@@ -312,25 +314,39 @@ def indexUI(user_file,bills_file,stage_file):
         global value
         global valueobj
         tree = stage.read_xml(stage_file)
-        nodes = stage.find_nodes(tree, "stage")
+        nodes = stage.find_nodes(tree, "stage/*")
         result_nodes = stage.get_node_by_keyvalue(nodes, {"id": value})
 
-        a = stage.create_node("type", {'type':bills_ui.var_bills_type.get()}, None)
-        # B.插入到父节点之下
+        a = stage.create_node("type", {'id':bills_ui.var_bills_type.get()}, None)
+        # 插入到父节点之下
+
         stage.add_child_node(result_nodes, a)
-        # 6. 输出到结果文件
+        #输出到结果文件
         stage.write_xml(tree, stage_file)
         tree_stage.insert(valueobj,0,text=bills_ui.var_bills_type.get())
 
     # 删除单据
     def removeBills():
         pass
+
     # 修改单据
     def updateBills():
         pass
+
     # 添加单据页面_清空按钮
-    def cancel():
-        pass
+    def cancel_bills():
+        bills_ui.var_serialNum.set('')
+        bills_ui.var_user.set('')
+        bills_ui.var_incident.set('')
+        bills_ui.var_jobDate_y.set('')
+        bills_ui.var_jobDate_m.set('')
+        bills_ui.var_jobDate_d.set('')
+        bills_ui.var_serDate_hrs.set('')
+        bills_ui.var_serDate_mins.set('')
+        bills_ui.var_copying.set('')
+        bills_ui.var_filing.set('')
+        bills_ui.var_serving.set('')
+        bills_ui.var_bills_type.set('')
 
     # 导入用户文件
     def input_user():
@@ -390,32 +406,18 @@ def indexUI(user_file,bills_file,stage_file):
             stage_ui.var_stage_endDate_y.set(data[tree_stage.item(idx)["text"]][0][8:12])
             stage_ui.var_stage_endDate_m.set(data[tree_stage.item(idx)["text"]][0][13:])
 
-    def raise_frame(frame):
-        frame.tkraise()
-
-    def billsUI():
-        raise_frame(bills_page)
-
-    def userUI():
-        raise_frame(adduser_page)
-
-    def stageUI():
-        raise_frame(stage_page)
-
-    var_update_node = tk.StringVar()#修改节点的数据
-
     #删除子节点
     def delete_node():
-
         tree = stage.read_xml(stage_file)
-        del_parent_nodes = stage.find_nodes(tree, "stage")
+        del_parent_nodes = stage.find_nodes(tree, "stage/*")
         # 准确定位子节点并删除之
-        target_del_node = stage.del_node_by_tagkeyvalue(del_parent_nodes, "type", {"type": value})
+        target_del_node = stage.del_node_by_tagkeyvalue(del_parent_nodes, "type", {"id": value})
         stage.write_xml(tree, stage_file)
         tk.messagebox.showinfo(title='提示',message='删除成功!')
         items = tree_stage.get_children()
         [tree_stage.delete(item) for item in items]
         show_stage_data()
+
 
     #修改子节点弹出修改窗口
     def update_node():
@@ -425,8 +427,8 @@ def indexUI(user_file,bills_file,stage_file):
             # 1. 读取xml文件
             tree = stage.read_xml(stage_file)
             nodes = stage.find_nodes(tree, "stage/type")
-            result_nodes = stage.get_node_by_keyvalue(nodes, {"type": value})
-            stage.change_node_properties(result_nodes, {"type":var_update_node.get()})
+            result_nodes = stage.get_node_by_keyvalue(nodes, {"id": value})
+            stage.change_node_properties(result_nodes, {"id":var_update_node.get()})
             stage.write_xml(tree, stage_file)
             tk.messagebox.showinfo(title='提示',message='修改成功!')
             var_update_node.set('')
@@ -438,7 +440,6 @@ def indexUI(user_file,bills_file,stage_file):
         # 取消_修改子节点
         def cancel_add_node():
             root.destroy()
-
         root = tk.Toplevel(window)
         root.geometry('270x100')
         update_la = tk.Label(root, text='Type:').place(x=20, y=20)
@@ -451,6 +452,28 @@ def indexUI(user_file,bills_file,stage_file):
         root.resizable(False, False)
         root.mainloop()
 
+    def raise_frame(frame):
+        frame.tkraise()
+
+    def billsUI():
+        raise_frame(bills_page)
+        cancels()#清空用户页面控件数据
+        wipe_data()#清空Stgae页面控件数据
+        cancel_bills()  # 清空单据页面控件数据
+
+    def userUI():
+        raise_frame(adduser_page)
+        cancels()#清空用户页面控件数据
+        wipe_data()#清空Stgae页面控件数据
+        cancel_bills()  # 清空单据页面控件数据
+
+    def stageUI():
+        raise_frame(stage_page)
+        cancels()   #清空用户页面控件数据
+        wipe_data() #清空Stgae页面控件数据
+        cancel_bills()  #清空单据页面控件数据
+
+    var_update_node = tk.StringVar()    #修改节点的数据
     #鼠标右键菜单
     def _right_key(event):
         menubar = Menu(window, tearoff=False)
@@ -504,7 +527,7 @@ def indexUI(user_file,bills_file,stage_file):
     confirm_next.place(x=200,y=275)
     removeBills = tk.Button(bills_page, text='删 除', width=6, command=removeBills)
     updateBills = tk.Button(bills_page, text='修 改', width=6, command=updateBills)
-    cancel_i = tk.Button(bills_page, text='清 空', width=6, command=cancel)
+    cancel_i = tk.Button(bills_page, text='清 空', width=6, command=cancel_bills)
     cancel_i.place(x=280, y=275)
 
     #用户列表

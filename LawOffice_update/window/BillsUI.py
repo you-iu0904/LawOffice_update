@@ -40,6 +40,7 @@ def bills_ui(bills_page):
     var_filing = tk.StringVar()
     var_serving = tk.StringVar()
     var_bills_type=tk.StringVar()
+
     # 添加收据单_控件
     serialNum = tk.Entry(bills_page, textvariable=var_serialNum)
     user_la = tk.Label(bills_page, text="Fee Earners:")

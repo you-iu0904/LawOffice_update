@@ -66,12 +66,11 @@ def get_node_by_keyvalue(nodelist, kv_map):
 if __name__ == "__main__":
     # 1. 读取xml文件
     tree = read_xml("emplist.xml")
-    nodes = find_nodes(tree, "stage/type")
-
-    result_nodes = get_node_by_keyvalue(nodes, {"type": "asd"})
+    nodes = find_nodes(tree, "stage/*/*")
+    result_nodes = get_node_by_keyvalue(nodes, {"id": "ppp"})
     print(result_nodes)
-    change_node_properties(result_nodes, {"type": "1"})
-
-    # 6. 输出到结果文件
-    write_xml(tree, "emplist.xml")
+    # change_node_properties(result_nodes, {"id": "ppp"})
+    #
+    # # 6. 输出到结果文件
+    # write_xml(tree, "emplist.xml")
 
