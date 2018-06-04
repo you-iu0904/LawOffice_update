@@ -314,12 +314,10 @@ def indexUI(user_file,bills_file,stage_file):
         global value
         global valueobj
         tree = stage.read_xml(stage_file)
-        nodes = stage.find_nodes(tree, "stage/*")
+        nodes = stage.find_nodes(tree, "stage")
         result_nodes = stage.get_node_by_keyvalue(nodes, {"id": value})
-
         a = stage.create_node("type", {'id':bills_ui.var_bills_type.get()}, None)
         # 插入到父节点之下
-
         stage.add_child_node(result_nodes, a)
         #输出到结果文件
         stage.write_xml(tree, stage_file)
@@ -409,9 +407,9 @@ def indexUI(user_file,bills_file,stage_file):
     #删除子节点
     def delete_node():
         tree = stage.read_xml(stage_file)
-        del_parent_nodes = stage.find_nodes(tree, "stage/*")
+        del_parent_nodes = stage.find_nodes(tree, "stage")
         # 准确定位子节点并删除之
-        target_del_node = stage.del_node_by_tagkeyvalue(del_parent_nodes, "type", {"id": value})
+        target_del_node = stage.del_node_by_tagkeyvalue(del_parent_nodes,'type' ,{"id": value})
         stage.write_xml(tree, stage_file)
         tk.messagebox.showinfo(title='提示',message='删除成功!')
         items = tree_stage.get_children()
