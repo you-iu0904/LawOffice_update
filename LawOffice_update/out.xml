@@ -1,2 +1,9 @@
-<?xml version='1.0' encoding='utf-8'?>
-<data> <stage date="2010/11-2011/06" id="Stage1" name="Pre action stage"><type type="conferenceWithinStage1" /></stage><stage date="2011/06-2011/08" id="Stage2" name="From Petiton to the day before the day of filing the First of Appointment bundle" /></data>
+<A>
+      <B  id="1" name="apple">
+		<B id='5' name="orange">
+			<s id='6' name="orange1"></s>
+		</B>
+	  </B>
+      <B  id="2" name="orange"/>
+      <B  id="3" name="banana"/>
+</A>

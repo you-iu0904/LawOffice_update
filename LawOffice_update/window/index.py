@@ -280,6 +280,8 @@ def indexUI(user_file,bills_file,stage_file):
         num1=0
         num2 = 0
         try:
+            items = tree_stage.get_children()
+            [tree_stage.delete(item) for item in items]
             treexml = et.parse(Stage_file)
             root = treexml.getroot()
             for child in root:
@@ -304,24 +306,53 @@ def indexUI(user_file,bills_file,stage_file):
         tk.messagebox.showinfo(title='提示',message='删除成功!')
         wipe_data()
 
-    # 添加收据单_添加当前层按钮
+    # 添加收据单
     def confirms():
-        pass
+        global value
+        global  valueobj
+        if value=='' :
+            tk.messagebox.showinfo(title='提示',message='请选择节点,再进行添加!')
+        elif bills_ui.var_user.get()=='':
+            tk.messagebox.showinfo(title='提示',message='请选择律师!')
+        elif bills_ui.var_incident.get()=='':
+            tk.messagebox.showinfo(title='提示',message='请填写Narrative!')
+        elif bills_ui.var_jobDate_y.get()=='' or bills_ui.var_jobDate_m.get()=='' or bills_ui.var_jobDate_d.get()=='':
+            tk.messagebox.showinfo(title='提示',message='请填写工作日期!')
+        elif bills_ui.var_serDate_hrs.get()=='' and bills_ui.var_serDate_mins.get()=='':
+            tk.messagebox.showinfo(title='提示',message='请填写服务时间!')
+        elif uti.check(bills_ui.var_jobDate_y.get()) == False or uti.check(bills_ui.var_jobDate_m.get()) == False or uti.check(bills_ui.var_jobDate_d.get()) == False:
+            tk.messagebox.showinfo(title='提示',message='工作日期只能为数字!')
+        elif uti.check(bills_ui.var_serDate_hrs.get()) == False or uti.check(bills_ui.var_serDate_mins.get()) == False:
+            tk.messagebox.showinfo(title='提示',message='服务时间只能为数字!')
+        elif len(bills_ui.var_jobDate_y.get())<4 or int(bills_ui.var_jobDate_m.get())>12 or int(bills_ui.var_jobDate_d.get())>31:
+            tk.messagebox.showinfo(title='提示',message='工作日期格式错误,请重新填写!')
+        else:
+            money = user_dict[bills_ui.var_user.get()][4]
+            time = user_dict[bills_ui.var_user.get()][1]
+            ##########################################################
+
+
 
 
     # 添加收据单_添加下一层
     def confirm_next():
         global value
         global valueobj
-        tree = stage.read_xml(stage_file)
-        nodes = stage.find_nodes(tree, "stage")
-        result_nodes = stage.get_node_by_keyvalue(nodes, {"id": value})
-        a = stage.create_node("type", {'id':bills_ui.var_bills_type.get()}, None)
-        # 插入到父节点之下
-        stage.add_child_node(result_nodes, a)
-        #输出到结果文件
-        stage.write_xml(tree, stage_file)
-        tree_stage.insert(valueobj,0,text=bills_ui.var_bills_type.get())
+        if value=='' or valueobj=='':
+            tk.messagebox.showinfo(title='提示',message='请选择节点再进行添加!')
+        else:
+            tree = stage.read_xml(stage_file)
+            nodes = stage.find_nodes(tree, ".//")
+            result_nodes = stage.get_node_by_keyvalue(nodes, {"id": value})
+            a = stage.create_node("type", {'id':bills_ui.var_bills_type.get()}, None)
+            # 插入到父节点之下
+            stage.add_child_node(result_nodes, a)
+            #添加xml
+            stage.write_xml(tree, stage_file)
+            tree_stage.insert(valueobj,0,text=bills_ui.var_bills_type.get())
+            tk.messagebox.showinfo(title='提示',message='添加成功!')
+            value=''
+            valueobj=''
 
     # 删除单据
     def removeBills():
@@ -406,49 +437,58 @@ def indexUI(user_file,bills_file,stage_file):
 
     #删除子节点
     def delete_node():
-        tree = stage.read_xml(stage_file)
-        del_parent_nodes = stage.find_nodes(tree, "stage")
-        # 准确定位子节点并删除之
-        target_del_node = stage.del_node_by_tagkeyvalue(del_parent_nodes,'type' ,{"id": value})
-        stage.write_xml(tree, stage_file)
-        tk.messagebox.showinfo(title='提示',message='删除成功!')
-        items = tree_stage.get_children()
-        [tree_stage.delete(item) for item in items]
-        show_stage_data()
-
+        global value
+        if value=='':
+            tk.messagebox.showinfo(title='提示',message='请选择节点,再进行删除!')
+        else:
+            tree = stage.read_xml(stage_file)
+            del_parent_nodes = stage.find_nodes(tree, ".//")
+            # 准确定位子节点并删除之
+            target_del_node = stage.del_node_by_tagkeyvalue(del_parent_nodes,'type' ,{"id": value})
+            stage.write_xml(tree, stage_file)
+            tk.messagebox.showinfo(title='提示',message='删除成功!')
+            show_stage_data()
+            value = ''
+            valueobj = ''
 
     #修改子节点弹出修改窗口
     def update_node():
+        if value=='':
+            tk.messagebox.showinfo(title='提示',message='请选择节点,再进行修改!')
+        else:
+            # 确定_修改子节点
+            def confirm_add_node():
+                # 1. 读取xml文件
+                global value
+                tree = stage.read_xml(stage_file)
+                nodes = stage.find_nodes(tree, ".//")
+                result_nodes = stage.get_node_by_keyvalue(nodes, {"id": value})
+                stage.change_node_properties(result_nodes, {"id":var_update_node.get()})
+                stage.write_xml(tree, stage_file)
+                tk.messagebox.showinfo(title='提示',message='修改成功!')
+                var_update_node.set('')
+                root.destroy()
+                show_stage_data()
+                value=''
+                valueobj=''
 
-        # 确定_修改子节点
-        def confirm_add_node():
-            # 1. 读取xml文件
-            tree = stage.read_xml(stage_file)
-            nodes = stage.find_nodes(tree, "stage/type")
-            result_nodes = stage.get_node_by_keyvalue(nodes, {"id": value})
-            stage.change_node_properties(result_nodes, {"id":var_update_node.get()})
-            stage.write_xml(tree, stage_file)
-            tk.messagebox.showinfo(title='提示',message='修改成功!')
-            var_update_node.set('')
-            root.destroy()
-            items = tree_stage.get_children()
-            [tree_stage.delete(item) for item in items]
-            show_stage_data()
+            # 取消_修改子节点
+            def cancel_add_node():
+                root.destroy()
+                value=''
+                valueobj=''
 
-        # 取消_修改子节点
-        def cancel_add_node():
-            root.destroy()
-        root = tk.Toplevel(window)
-        root.geometry('270x100')
-        update_la = tk.Label(root, text='Type:').place(x=20, y=20)
-        update_en = tk.Entry(root, textvariable=var_update_node)
-        update_en.place(x=70, y=20)
-        confirm = tk.Button(root,command=confirm_add_node,text='确定',width=5)
-        confirm.place(x=50,y=60)
-        cancel = tk.Button(root,command=cancel_add_node,text='取消',width=5)
-        cancel.place(x=100,y=60)
-        root.resizable(False, False)
-        root.mainloop()
+            root = tk.Toplevel(window)
+            root.geometry('270x100')
+            update_la = tk.Label(root, text='Type:').place(x=20, y=20)
+            update_en = tk.Entry(root, textvariable=var_update_node)
+            update_en.place(x=70, y=20)
+            confirm = tk.Button(root,command=confirm_add_node,text='确定',width=5)
+            confirm.place(x=50,y=60)
+            cancel = tk.Button(root,command=cancel_add_node,text='取消',width=5)
+            cancel.place(x=100,y=60)
+            root.resizable(False, False)
+            root.mainloop()
 
     def raise_frame(frame):
         frame.tkraise()
@@ -519,7 +559,7 @@ def indexUI(user_file,bills_file,stage_file):
     removeStageDate.place(x=310, y=190)
 
     #添加单据页面按钮
-    confirm = tk.Button(bills_page, text='添加当前层', width=8, command=confirms)
+    confirm = tk.Button(bills_page, text='添加收据', width=8, command=confirms)
     confirm.place(x=120, y=275)
     confirm_next=tk.Button(bills_page,text='添加下一层',width=8,command=confirm_next)
     confirm_next.place(x=200,y=275)

@@ -66,9 +66,6 @@ def get_node_by_keyvalue(nodelist, kv_map):
 if __name__ == "__main__":
     # 1. 读取xml文件
     tree = read_xml("emplist.xml")
-    del_parent_nodes = find_nodes(tree, "stage")
-    # 准确定位子节点并删除之
-    target_del_node = del_node_by_tagkeyvalue(del_parent_nodes, 'type', {"id": 'qq'})
-    print(target_del_node)
-    write_xml(tree, "emplist.xml")
-
+    nodes = find_nodes(tree, ".//")
+    result_nodes =get_node_by_keyvalue(nodes, {"id":'as'})
+    print(result_nodes)
