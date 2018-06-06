@@ -10,6 +10,7 @@ var_jobDate_d=''
 var_serDate_hrs=''
 var_serDate_mins=''
 var_copying=''
+
 var_filing=''
 var_serving=''
 var_bills_type=''
@@ -40,7 +41,9 @@ def bills_ui(bills_page):
     var_filing = tk.StringVar()
     var_serving = tk.StringVar()
     var_bills_type=tk.StringVar()
-
+    var_copying.set('0')
+    var_filing.set('0')
+    var_serving.set('0')
     # 添加收据单_控件
     serialNum = tk.Entry(bills_page, textvariable=var_serialNum)
     user_la = tk.Label(bills_page, text="Fee Earners:")

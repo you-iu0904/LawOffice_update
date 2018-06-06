@@ -1,7 +1,7 @@
 <A>
       <B  id="1" name="apple">
 		<B id='5' name="orange">
-			<s id='6' name="orange1"></s>
+			<B id='6' name="orange1"></B>
 		</B>
 	  </B>
       <B  id="2" name="orange"/>

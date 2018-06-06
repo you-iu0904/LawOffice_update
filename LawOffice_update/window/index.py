@@ -327,9 +327,40 @@ def indexUI(user_file,bills_file,stage_file):
         elif len(bills_ui.var_jobDate_y.get())<4 or int(bills_ui.var_jobDate_m.get())>12 or int(bills_ui.var_jobDate_d.get())>31:
             tk.messagebox.showinfo(title='提示',message='工作日期格式错误,请重新填写!')
         else:
-            money = user_dict[bills_ui.var_user.get()][4]
-            time = user_dict[bills_ui.var_user.get()][1]
-            ##########################################################
+            rates = user_dict[bills_ui.var_user.get()][4]
+            ms = user_dict[bills_ui.var_user.get()][1]
+            if int(bills_ui.var_jobDate_y.get())<int(ms):
+                tk.messagebox.showinfo(title='提示',message='工作日期不能小于该律师认证日期!')
+            else:
+
+                date_y = bills_ui.var_jobDate_y.get()
+                date_m = '0'+str(bills_ui.var_jobDate_m.get()) if len(bills_ui.var_jobDate_m.get())==1 else bills_ui.var_jobDate_m.get()
+                date_d = '0'+str(bills_ui.var_jobDate_d.get()) if len(bills_ui.var_jobDate_d.get())==1 else bills_ui.var_jobDate_d.get()
+                time = (int(bills_ui.var_serDate_hrs.get())*60)+int(bills_ui.var_serDate_mins.get())
+                money = float(int(time)*float(rates))+int(bills_ui.var_copying.get())+int(bills_ui.var_filing.get())+int(bills_ui.var_serving.get())
+
+                tree = stage.read_xml(stage_file)
+                nodes = stage.find_nodes(tree, ".//")
+                result_nodes = stage.get_node_by_keyvalue(nodes, {"id": value})
+                a = stage.create_node("bills", {'FeeEarners':bills_ui.var_user.get(),
+                                                'Narrative':bills_ui.var_incident.get(),
+                                                'Date':date_y+'-'+date_m+'-'+date_d,
+                                                'Time':str(time),
+                                                'TotalMoney':str(money)
+                                                },
+                                      None)
+                tree_total.insert('', 0, values=(num, bills_ui.var_user.get(),
+                                           date_y + '-' + date_m + '-' + date_d,
+                                           str(time), bills_ui.var_incident.get(),
+                                           int(bills_ui.var_copying.get()) + int(bills_ui.var_filing.get()) + int(bills_ui.var_serving.get()),
+                                           str(money)
+                                          )
+                            )
+
+                # 插入到父节点之下
+                stage.add_child_node(result_nodes, a)
+                #添加xml
+                stage.write_xml(tree, stage_file)
 
 
 
@@ -372,9 +403,9 @@ def indexUI(user_file,bills_file,stage_file):
         bills_ui.var_jobDate_d.set('')
         bills_ui.var_serDate_hrs.set('')
         bills_ui.var_serDate_mins.set('')
-        bills_ui.var_copying.set('')
-        bills_ui.var_filing.set('')
-        bills_ui.var_serving.set('')
+        bills_ui.var_copying.set('0')
+        bills_ui.var_filing.set('0')
+        bills_ui.var_serving.set('0')
         bills_ui.var_bills_type.set('')
 
     # 导入用户文件
@@ -600,30 +631,30 @@ def indexUI(user_file,bills_file,stage_file):
     window.config(menu=men)
 
     # 显示单据的全部信息
-    tree = ttk.Treeview(window, show="headings", height=13)
-    tree["columns"] = ('ID', 'Fee Earners', 'Date', 'Billable MIns', 'Title', 'Rests', 'Total')
-    tree.column('ID', width=60, anchor="center")
-    tree.column('Fee Earners', width=80, anchor="center")
-    tree.column('Date', width=92, anchor="center")
-    tree.column('Billable MIns', width=92, anchor="center")
-    tree.column('Title', width=210, anchor="center")
-    tree.column('Rests', width=82, anchor="center")
-    tree.column('Total', width=82, anchor="center")
-    tree.column('ID', width=60, anchor="center")
-    tree.column('Fee Earners', width=80, anchor="center")
-    tree.column('Date', width=92, anchor="center")
-    tree.column('Billable MIns', width=92, anchor="center")
-    tree.column('Title', width=210, anchor="center")
-    tree.column('Rests', width=82, anchor="center")
-    tree.column('Total', width=82, anchor="center")
+    tree_total = ttk.Treeview(window, show="headings", height=13)
+    tree_total["columns"] = ('ID', 'Fee Earners', 'Date', 'Billable MIns', 'Title', 'Rests', 'Total')
+    tree_total.column('ID', width=60, anchor="center")
+    tree_total.column('Fee Earners', width=80, anchor="center")
+    tree_total.column('Date', width=92, anchor="center")
+    tree_total.column('Billable MIns', width=92, anchor="center")
+    tree_total.column('Title', width=210, anchor="center")
+    tree_total.column('Rests', width=82, anchor="center")
+    tree_total.column('Total', width=82, anchor="center")
+    tree_total.column('ID', width=60, anchor="center")
+    tree_total.column('Fee Earners', width=80, anchor="center")
+    tree_total.column('Date', width=92, anchor="center")
+    tree_total.column('Billable MIns', width=92, anchor="center")
+    tree_total.column('Title', width=210, anchor="center")
+    tree_total.column('Rests', width=82, anchor="center")
+    tree_total.column('Total', width=82, anchor="center")
 
-    tree.heading('ID', text='ID')
-    tree.heading('Fee Earners', text='Fee Earners')
-    tree.heading('Date', text='Date')
-    tree.heading('Billable MIns', text='Billable MIns')
-    tree.heading('Title', text='Title')
-    tree.heading('Rests', text='Rests')
-    tree.heading('Total', text='Total')
-    tree.place(x=0, y=315)
+    tree_total.heading('ID', text='ID')
+    tree_total.heading('Fee Earners', text='Fee Earners')
+    tree_total.heading('Date', text='Date')
+    tree_total.heading('Billable MIns', text='Billable MIns')
+    tree_total.heading('Title', text='Title')
+    tree_total.heading('Rests', text='Rests')
+    tree_total.heading('Total', text='Total')
+    tree_total.place(x=0, y=315)
 
     window.mainloop()
