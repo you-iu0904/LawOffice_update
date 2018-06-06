@@ -38,7 +38,7 @@ import Model.Stage as stage
 User_file=''
 Bills_file=''
 Stage_file=''
-
+serialNumber = 0
 num = 0
 num1 = 0
 num2 = 0
@@ -51,6 +51,7 @@ def indexUI(user_file,bills_file,stage_file):
     global num
     global num1
     global num2
+    global serialNumber
     window = tk.Tk()
     window.title("xxx律师所")
     window.geometry('690x600')
@@ -65,8 +66,7 @@ def indexUI(user_file,bills_file,stage_file):
     Bills_file=bills_file
     Stage_file=stage_file
 
-
-
+    tree_total = ttk.Treeview(window, show="headings", height=13)
     lbUserss = tk.Listbox(window, height=9, width=24)
 
     user_dict={}
@@ -82,7 +82,7 @@ def indexUI(user_file,bills_file,stage_file):
 
     try:
         #页面加载完成时将数据添加到stage列表中
-        tree_stage = ttk.Treeview(window, height=8)
+        tree_stage = ttk.Treeview(window, height=7)
         treexml = et.parse(Stage_file)
         root = treexml.getroot()
         for child in root:
@@ -91,10 +91,31 @@ def indexUI(user_file,bills_file,stage_file):
             for i in child:
                 myidx1 = tree_stage.insert(myid, num1, text=i.attrib['id'])
                 num1+=1
-                for s in i:
-                    myidx2 = tree_stage.insert(myidx1, num2, text=s.attrib['id'])
-                    num2+=1
+                try:
+                    for s in i:
+                        myidx2 = tree_stage.insert(myidx1, num2, text=s.attrib['id'])
+                        num2+=1
+                except KeyError:
+                    pass
     except Exception as e:
+        pass
+
+    #页面加载时将单据的数据添tree_total列表中
+    try:
+        dom = xml.dom.minidom.parse(stage_file)
+        root = dom.documentElement
+        bb = root.getElementsByTagName('bills')
+        for i in range(len(bb)):
+            tree_total.insert('', serialNumber, values=(bb[i].getAttribute('serialNumber'),bb[i].getAttribute('FeeEarners'),
+                                             bb[i].getAttribute('Date'),
+                                             bb[i].getAttribute('Time'),
+                                             bb[i].getAttribute('Narrative'),
+                                             bb[i].getAttribute('Other'),
+                                             bb[i].getAttribute('TotalMoney')
+                                             )
+                              )
+            serialNumber=bb[i].getAttribute('serialNumber')
+    except Exception:
         pass
 
 
@@ -103,8 +124,6 @@ def indexUI(user_file,bills_file,stage_file):
         sex = '男' if int(user_ui.var_sex.get()) == 1 else '女'
         if  (user_ui.var_username.get() =='') | (user_ui.var_acronym.get()=='') | (sex=='') | (user_ui.var_charge.get()==''):
             tk.messagebox.showinfo(title='提示',message='请填写相关数据，再进行添加!')
-        elif  len(user_ui.var_ReauthenticationTime.get())<4:
-            tk.messagebox.showinfo(title='提示',message='请输入正确的认证时间!')
         elif uti.check(user_ui.var_ReauthenticationTime.get())!=True:
             tk.messagebox.showinfo(title='提示',message='认证时间错误,请重新输入!')
         elif uti.check(user_ui.var_charge.get())!=True:
@@ -226,6 +245,7 @@ def indexUI(user_file,bills_file,stage_file):
                     tree_stage.insert("", num,text='Stage'+stage_ui.var_stageID.get())
                     tk.messagebox.showinfo(title='提示', message='添加成功!')
                     wipe_data()  # 清空数据
+
     def wipe_data():
         stage_ui.var_stageID.set('')
         stage_ui.var_stageName.set('')
@@ -274,6 +294,28 @@ def indexUI(user_file,bills_file,stage_file):
             tk.messagebox.showinfo(title='提示', message='修改成功!')
             wipe_data()  # 清空数据
 
+    # 显示单据
+    def show_bills():
+        try:
+            global serialNumber
+            items = tree_total.get_children()
+            [tree_total.delete(item) for item in items]
+            dom = xml.dom.minidom.parse(stage_file)
+            root = dom.documentElement
+            bb = root.getElementsByTagName('bills')
+            for i in range(len(bb)):
+                tree_total.insert('', bb[i].getAttribute('serialNumber'), values=(bb[i].getAttribute('serialNumber'), bb[i].getAttribute('FeeEarners'),
+                                                            bb[i].getAttribute('Date'),
+                                                            bb[i].getAttribute('Time'),
+                                                            bb[i].getAttribute('Narrative'),
+                                                            bb[i].getAttribute('Other'),
+                                                            bb[i].getAttribute('TotalMoney')
+                                                            )
+                                  )
+                serialNumber =bb[i].getAttribute('serialNumber')
+        except Exception:
+            pass
+
     # 显示stage
     def show_stage_data():
         num=0
@@ -310,6 +352,8 @@ def indexUI(user_file,bills_file,stage_file):
     def confirms():
         global value
         global  valueobj
+        global serialNumber
+
         if value=='' :
             tk.messagebox.showinfo(title='提示',message='请选择节点,再进行添加!')
         elif bills_ui.var_user.get()=='':
@@ -321,35 +365,41 @@ def indexUI(user_file,bills_file,stage_file):
         elif bills_ui.var_serDate_hrs.get()=='' and bills_ui.var_serDate_mins.get()=='':
             tk.messagebox.showinfo(title='提示',message='请填写服务时间!')
         elif uti.check(bills_ui.var_jobDate_y.get()) == False or uti.check(bills_ui.var_jobDate_m.get()) == False or uti.check(bills_ui.var_jobDate_d.get()) == False:
-            tk.messagebox.showinfo(title='提示',message='工作日期只能为数字!')
+            tk.messagebox.showinfo(title='提示',message='工作日期只能填写数字!')
         elif uti.check(bills_ui.var_serDate_hrs.get()) == False or uti.check(bills_ui.var_serDate_mins.get()) == False:
-            tk.messagebox.showinfo(title='提示',message='服务时间只能为数字!')
+            tk.messagebox.showinfo(title='提示',message='服务时间只能填写数字!')
         elif len(bills_ui.var_jobDate_y.get())<4 or int(bills_ui.var_jobDate_m.get())>12 or int(bills_ui.var_jobDate_d.get())>31:
             tk.messagebox.showinfo(title='提示',message='工作日期格式错误,请重新填写!')
+        elif uti.check(bills_ui.var_copying.get())== False :
+            tk.messagebox.showinfo(title='提示',message='Copying只能填写数字,请重新填写!')
+        elif uti.check(bills_ui.var_filing.get())== False:
+            tk.messagebox.showinfo(title='提示',message='Filing只能填写数字,请重新填写!')
+        elif uti.check(bills_ui.var_serving.get())== False:
+            tk.messagebox.showinfo(title='提示',message='Serving只能填写数字,请重新填写!')
         else:
             rates = user_dict[bills_ui.var_user.get()][4]
             ms = user_dict[bills_ui.var_user.get()][1]
             if int(bills_ui.var_jobDate_y.get())<int(ms):
                 tk.messagebox.showinfo(title='提示',message='工作日期不能小于该律师认证日期!')
             else:
-
                 date_y = bills_ui.var_jobDate_y.get()
                 date_m = '0'+str(bills_ui.var_jobDate_m.get()) if len(bills_ui.var_jobDate_m.get())==1 else bills_ui.var_jobDate_m.get()
                 date_d = '0'+str(bills_ui.var_jobDate_d.get()) if len(bills_ui.var_jobDate_d.get())==1 else bills_ui.var_jobDate_d.get()
                 time = (int(bills_ui.var_serDate_hrs.get())*60)+int(bills_ui.var_serDate_mins.get())
                 money = float(int(time)*float(rates))+int(bills_ui.var_copying.get())+int(bills_ui.var_filing.get())+int(bills_ui.var_serving.get())
-
                 tree = stage.read_xml(stage_file)
                 nodes = stage.find_nodes(tree, ".//")
                 result_nodes = stage.get_node_by_keyvalue(nodes, {"id": value})
-                a = stage.create_node("bills", {'FeeEarners':bills_ui.var_user.get(),
+                a = stage.create_node("bills", {'serialNumber':str(int(serialNumber)+1),
+                                                'FeeEarners':bills_ui.var_user.get(),
                                                 'Narrative':bills_ui.var_incident.get(),
                                                 'Date':date_y+'-'+date_m+'-'+date_d,
                                                 'Time':str(time),
+                                                'Other':str(int(bills_ui.var_copying.get())+int(bills_ui.var_filing.get())+int(bills_ui.var_serving.get())),
                                                 'TotalMoney':str(money)
                                                 },
                                       None)
-                tree_total.insert('', 0, values=(num, bills_ui.var_user.get(),
+                tree_total.insert('', int(serialNumber)+1, values=(str(int(serialNumber)+1), bills_ui.var_user.get(),
                                            date_y + '-' + date_m + '-' + date_d,
                                            str(time), bills_ui.var_incident.get(),
                                            int(bills_ui.var_copying.get()) + int(bills_ui.var_filing.get()) + int(bills_ui.var_serving.get()),
@@ -361,9 +411,9 @@ def indexUI(user_file,bills_file,stage_file):
                 stage.add_child_node(result_nodes, a)
                 #添加xml
                 stage.write_xml(tree, stage_file)
-
-
-
+                tk.messagebox.showinfo(title='提示',message='添加成功!')
+                cancel_bills()
+                int(serialNumber)+1
 
     # 添加收据单_添加下一层
     def confirm_next():
@@ -387,11 +437,45 @@ def indexUI(user_file,bills_file,stage_file):
 
     # 删除单据
     def removeBills():
-        pass
+        global serialNumber
+        tree = stage.read_xml(stage_file)
+        del_parent_nodes = stage.find_nodes(tree, ".//")
+        # 准确定位子节点并删除之
+        target_del_node = stage.del_node_by_tagkeyvalue(del_parent_nodes, 'bills', {"serialNumber": bills_ui.var_serialNum.get()})
+        stage.write_xml(tree, stage_file)
+        tk.messagebox.showinfo(title='提示', message='删除成功!')
+        show_bills()
+        int(serialNumber)-1
+        billsUI()
 
     # 修改单据
     def updateBills():
         pass
+    #点击控制台
+    def trefun_total(event):
+        billsUI()
+        iids = tree_total.selection()
+        data_list=[]
+        for i in iids:
+            data_list.append(tree_total.item(i, 'values'))
+        for o in data_list:
+            bills_ui.var_serialNum.set(o[0])
+            bills_ui.var_user.set(o[1])
+            bills_ui.var_incident.set(o[4])
+            bills_ui.var_jobDate_y.set(o[2].replace('-', '')[:4])
+            bills_ui.var_jobDate_m.set(o[2].replace('-', '')[4:6])
+            bills_ui.var_jobDate_d.set(o[2].replace('-', '')[6:8])
+            if float(o[3])<60:
+                bills_ui.var_serDate_mins.set(o[3])
+            else:
+                bills_ui.var_serDate_hrs.set(int(float(o[3])/60))
+                bills_ui.var_serDate_mins.set(int(float(o[3]))%60)
+
+        confirm.place_forget()
+        confirm_next.place_forget()
+        updateBills.place(x=120, y=275)
+        removeBills.place(x=200, y=275)
+        cancel_i.place(x=280, y=275)
 
     # 添加单据页面_清空按钮
     def cancel_bills():
@@ -401,8 +485,8 @@ def indexUI(user_file,bills_file,stage_file):
         bills_ui.var_jobDate_y.set('')
         bills_ui.var_jobDate_m.set('')
         bills_ui.var_jobDate_d.set('')
-        bills_ui.var_serDate_hrs.set('')
-        bills_ui.var_serDate_mins.set('')
+        bills_ui.var_serDate_hrs.set('0')
+        bills_ui.var_serDate_mins.set('0')
         bills_ui.var_copying.set('0')
         bills_ui.var_filing.set('0')
         bills_ui.var_serving.set('0')
@@ -529,18 +613,32 @@ def indexUI(user_file,bills_file,stage_file):
         cancels()#清空用户页面控件数据
         wipe_data()#清空Stgae页面控件数据
         cancel_bills()  # 清空单据页面控件数据
-
+        confirm.place(x=120,y=275)
+        confirm_next.place(x=205, y=275)
+        updateBills.place_forget()
+        removeBills.place_forget()
+        cancel_i.place(x=290, y=275)
     def userUI():
         raise_frame(adduser_page)
         cancels()#清空用户页面控件数据
         wipe_data()#清空Stgae页面控件数据
         cancel_bills()  # 清空单据页面控件数据
+        confirm.place(x=120,y=275)
+        confirm_next.place(x=205, y=275)
+        updateBills.place_forget()
+        removeBills.place_forget()
+        cancel_i.place(x=290, y=275)
 
     def stageUI():
         raise_frame(stage_page)
         cancels()   #清空用户页面控件数据
         wipe_data() #清空Stgae页面控件数据
         cancel_bills()  #清空单据页面控件数据
+        confirm.place(x=120,y=275)
+        confirm_next.place(x=205, y=275)
+        updateBills.place_forget()
+        removeBills.place_forget()
+        cancel_i.place(x=290, y=275)
 
     var_update_node = tk.StringVar()    #修改节点的数据
     #鼠标右键菜单
@@ -593,11 +691,11 @@ def indexUI(user_file,bills_file,stage_file):
     confirm = tk.Button(bills_page, text='添加收据', width=8, command=confirms)
     confirm.place(x=120, y=275)
     confirm_next=tk.Button(bills_page,text='添加下一层',width=8,command=confirm_next)
-    confirm_next.place(x=200,y=275)
+    confirm_next.place(x=205,y=275)
     removeBills = tk.Button(bills_page, text='删 除', width=6, command=removeBills)
     updateBills = tk.Button(bills_page, text='修 改', width=6, command=updateBills)
     cancel_i = tk.Button(bills_page, text='清 空', width=6, command=cancel_bills)
-    cancel_i.place(x=280, y=275)
+    cancel_i.place(x=290, y=275)
 
     #用户列表
     lbUserss.place(x=530, y=0)
@@ -631,8 +729,9 @@ def indexUI(user_file,bills_file,stage_file):
     window.config(menu=men)
 
     # 显示单据的全部信息
-    tree_total = ttk.Treeview(window, show="headings", height=13)
+
     tree_total["columns"] = ('ID', 'Fee Earners', 'Date', 'Billable MIns', 'Title', 'Rests', 'Total')
+    tree_total.bind('<<TreeviewSelect>>',trefun_total)
     tree_total.column('ID', width=60, anchor="center")
     tree_total.column('Fee Earners', width=80, anchor="center")
     tree_total.column('Date', width=92, anchor="center")
@@ -655,6 +754,6 @@ def indexUI(user_file,bills_file,stage_file):
     tree_total.heading('Title', text='Title')
     tree_total.heading('Rests', text='Rests')
     tree_total.heading('Total', text='Total')
-    tree_total.place(x=0, y=315)
+    tree_total.place(x=0, y=333)
 
     window.mainloop()

@@ -44,6 +44,8 @@ def bills_ui(bills_page):
     var_copying.set('0')
     var_filing.set('0')
     var_serving.set('0')
+    var_serDate_hrs.set('0')
+    var_serDate_mins.set('0')
     # 添加收据单_控件
     serialNum = tk.Entry(bills_page, textvariable=var_serialNum)
     user_la = tk.Label(bills_page, text="Fee Earners:")

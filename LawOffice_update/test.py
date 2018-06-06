@@ -63,9 +63,24 @@ def get_node_by_keyvalue(nodelist, kv_map):
     return result_nodes
 
 
-if __name__ == "__main__":
-    # 1. 读取xml文件
-    tree = read_xml("emplist.xml")
-    nodes = find_nodes(tree, ".//")
-    result_nodes =get_node_by_keyvalue(nodes, {"id":'as'})
-    print(result_nodes)
+# if __name__ == "__main__":
+#     # 1. 读取xml文件
+#     tree = read_xml("emplist.xml")
+#     nodes = find_nodes(tree, ".//")
+#     result_nodes =get_node_by_keyvalue(nodes, {"id":'as'})
+#     print(result_nodes)
+
+dom = xml.dom.minidom.parse('emplist.xml')
+root = dom.documentElement
+bb = root.getElementsByTagName('bills')
+for i in range(len(bb)):
+    print(bb[i].getAttribute('TotalMoney')+bb[i].getAttribute('Time'))
+
+
+
+
+
+
+
+
+
