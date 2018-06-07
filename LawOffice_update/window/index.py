@@ -55,7 +55,7 @@ def indexUI(user_file,bills_file,stage_file):
     window = tk.Tk()
     window.title("xxx律师所")
     window.geometry('690x600')
-    window.resizable(False, False)
+    # window.resizable(False, False)
 
     bills_page = Frame(window, width=500, height=320)
     adduser_page = Frame(window, width=500, height=320)
@@ -82,7 +82,13 @@ def indexUI(user_file,bills_file,stage_file):
 
     try:
         #页面加载完成时将数据添加到stage列表中
-        tree_stage = ttk.Treeview(window, height=7)
+        tree_stage = ttk.Treeview(window, height=6)
+        S1 = Scrollbar(window, orient=HORIZONTAL)
+
+        tree_stage['xscrollcommand'] = S1.get()
+        S1['command'] = tree_stage.xview
+        S1.place(x=530, y=314)
+
         treexml = et.parse(Stage_file)
         root = treexml.getroot()
         for child in root:
