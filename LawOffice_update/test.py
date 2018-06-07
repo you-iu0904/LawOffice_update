@@ -63,18 +63,13 @@ def get_node_by_keyvalue(nodelist, kv_map):
     return result_nodes
 
 
-# if __name__ == "__main__":
-#     # 1. 读取xml文件
-#     tree = read_xml("emplist.xml")
-#     nodes = find_nodes(tree, ".//")
-#     result_nodes =get_node_by_keyvalue(nodes, {"id":'as'})
-#     print(result_nodes)
-
-dom = xml.dom.minidom.parse('emplist.xml')
-root = dom.documentElement
-bb = root.getElementsByTagName('bills')
-for i in range(len(bb)):
-    print(bb[i].getAttribute('TotalMoney')+bb[i].getAttribute('Time'))
+if __name__ == "__main__":
+    # 1. 读取xml文件
+    tree = read_xml("emplist.xml")
+    nodes = find_nodes(tree, ".//")
+    result_nodes =get_node_by_keyvalue(nodes, {"serialNumber":'4'})
+    stage.change_node_properties(result_nodes, {"Date":'2018-07-21','Time':'123'})
+    stage.write_xml(tree, "emplist.xml")
 
 
 

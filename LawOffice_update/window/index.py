@@ -447,11 +447,69 @@ def indexUI(user_file,bills_file,stage_file):
         show_bills()
         int(serialNumber)-1
         billsUI()
+        bills_ui.var_serialNum==''
 
     # 修改单据
     def updateBills():
-        pass
-    #点击控制台
+
+        if bills_ui.var_user.get() == '':
+            tk.messagebox.showinfo(title='提示', message='请选择律师!')
+        elif bills_ui.var_incident.get() == '':
+            tk.messagebox.showinfo(title='提示', message='请填写Narrative!')
+        elif bills_ui.var_jobDate_y.get() == '' or bills_ui.var_jobDate_m.get() == '' or bills_ui.var_jobDate_d.get() == '':
+            tk.messagebox.showinfo(title='提示', message='请填写工作日期!')
+        elif bills_ui.var_serDate_hrs.get() == '' and bills_ui.var_serDate_mins.get() == '':
+            tk.messagebox.showinfo(title='提示', message='请填写服务时间!')
+        elif uti.check(bills_ui.var_jobDate_y.get()) == False or uti.check(
+                bills_ui.var_jobDate_m.get()) == False or uti.check(bills_ui.var_jobDate_d.get()) == False:
+            tk.messagebox.showinfo(title='提示', message='工作日期只能填写数字!')
+        elif uti.check(bills_ui.var_serDate_hrs.get()) == False or uti.check(bills_ui.var_serDate_mins.get()) == False:
+            tk.messagebox.showinfo(title='提示', message='服务时间只能填写数字!')
+        elif len(bills_ui.var_jobDate_y.get()) < 4 or int(bills_ui.var_jobDate_m.get()) > 12 or int(
+                bills_ui.var_jobDate_d.get()) > 31:
+            tk.messagebox.showinfo(title='提示', message='工作日期格式错误,请重新填写!')
+        elif uti.check(bills_ui.var_copying.get()) == False:
+            tk.messagebox.showinfo(title='提示', message='Copying只能填写数字,请重新填写!')
+        elif uti.check(bills_ui.var_filing.get()) == False:
+            tk.messagebox.showinfo(title='提示', message='Filing只能填写数字,请重新填写!')
+        elif uti.check(bills_ui.var_serving.get()) == False:
+            tk.messagebox.showinfo(title='提示', message='Serving只能填写数字,请重新填写!')
+        else:
+            rates = user_dict[bills_ui.var_user.get()][4]
+            ms = user_dict[bills_ui.var_user.get()][1]
+            if int(bills_ui.var_jobDate_y.get()) < int(ms):
+                tk.messagebox.showinfo(title='提示', message='工作日期不能小于该律师认证日期!')
+            else:
+                date_y = bills_ui.var_jobDate_y.get()
+                date_m = '0' + str(bills_ui.var_jobDate_m.get()) if len(
+                    bills_ui.var_jobDate_m.get()) == 1 else bills_ui.var_jobDate_m.get()
+                date_d = '0' + str(bills_ui.var_jobDate_d.get()) if len(
+                    bills_ui.var_jobDate_d.get()) == 1 else bills_ui.var_jobDate_d.get()
+                time = (int(bills_ui.var_serDate_hrs.get()) * 60) + int(bills_ui.var_serDate_mins.get())
+                money = float(int(time) * float(rates)) + int(bills_ui.var_copying.get()) + int(
+                    bills_ui.var_filing.get()) + int(bills_ui.var_serving.get())
+
+                tree = stage.read_xml(stage_file)
+                nodes = stage.find_nodes(tree, ".//")
+                result_nodes = stage.get_node_by_keyvalue(nodes, {"serialNumber":bills_ui.var_serialNum.get()})
+                stage.change_node_properties(result_nodes,{"Date":str(date_y)+'-'+str(date_m)+'-'+str(date_d),
+                                                           'FeeEarners':bills_ui.var_user.get(),
+
+
+
+                                                           'Narrative':bills_ui.var_incident.get(),
+                                                           'Other':str(int(bills_ui.var_copying.get())+int(bills_ui.var_filing.get())+int(bills_ui.var_serving.get())),
+                                                           'Time': str(time),
+                                                           'TotalMoney':str(money)
+                                                           }
+                                             )
+                stage.write_xml(tree, stage_file)
+                tk.messagebox.showinfo(title='提示',message='修改成功!')
+                billsUI()
+                show_bills()
+
+
+    #双击控制台将单据数据显示控件中
     def trefun_total(event):
         billsUI()
         iids = tree_total.selection()
