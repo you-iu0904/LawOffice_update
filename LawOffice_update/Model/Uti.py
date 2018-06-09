@@ -2,7 +2,7 @@ import string
 import tkinter as tk
 import tkinter.ttk as ttk
 import tkinter.font as tk_font
-import window.index
+
 import Model.Stage as stage
 import window.StageUI as stage_ui
 from xml.etree import ElementTree as et
@@ -28,21 +28,16 @@ class TreeListBox:
         self.setup_widget_tree()
         self.dict_group = dict_group
         self.level = 0
-
-
         self.build_tree(self.root, '')
 
     def setup_widget_tree(self):
-
         fr_x = tk.Frame(self.container_tree)
         fr_x.pack(side='bottom', fill='x')
         sb_x = tk.Scrollbar(fr_x, orient="horizontal", command=self.tree.xview)
         sb_x.pack(expand='yes', fill='x')
         self.tree.configure( xscrollcommand=sb_x.set)
         self.tree.pack(fill='both', expand='yes')
-        # self.tree.bind("<Double-Button-1>", self.trefun)
-        # self.tree.bind("<<TreeviewSelect>>", self.choice)
-        # self.tree.bind("<Button-3>", self.right_key)
+
 
 
     def build_tree(self, parent, id_stroki):

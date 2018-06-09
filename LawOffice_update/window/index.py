@@ -39,23 +39,17 @@ User_file=''
 Bills_file=''
 Stage_file=''
 serialNumber = 0
-num = 0
-num1 = 0
-num2 = 0
 
 value = ''
 valueobj = ''
 
 def indexUI(user_file,bills_file,stage_file):
 
-    global num
-    global num1
-    global num2
     global serialNumber
     window = tk.Tk()
     window.title("xxx律师所")
     window.geometry('690x600')
-    # window.resizable(False, False)
+    window.resizable(False, False)
 
     bills_page = Frame(window, width=500, height=320)
     adduser_page = Frame(window, width=500, height=320)
@@ -80,53 +74,39 @@ def indexUI(user_file,bills_file,stage_file):
             bills_ui.users.append(i)
             bills_ui.bills_ui(bills_page)
 
-    treexml = et.parse('emplist.xml')
+    treexml = et.parse(stage_file)
     root = treexml.getroot()
     d_dict = {}
     node = []
+
     for child in root:
-        s = []
+        data_list = []
+        data1_list = []
         data = child.attrib['id']
         node.append(data)
-        for i in child:
-            data1 = i.attrib['id']
-            s.append(data1)
-            d_dict[data] = s
+        try:
+            for i in child:
+                data1 = i.attrib['id']
+                data_list.append(data1)
+                d_dict[data] = data_list
+        except KeyError:
+                pass
+                try:
+                    for s in i:
+                        data2 = s.attrib['id']
+                        data1_list.append(data2)
+                        d_dict[data1] = data1_list
+                except KeyError:
+                    pass
 
-    d_dict['Nomenclature'] = node
+        d_dict['Data'] = node
 
     container_tree = tk.Frame(window, width=170, height=180)
     container_tree.propagate(False)
 
-
     tree_stage = ttk.Treeview(container_tree, show="tree", selectmode='browse')
-    myTest = uti.TreeListBox(window, 'Nomenclature', d_dict, stage_file,tree_stage,container_tree)
-    container_tree.place(x=520, y=168)
-    # try:
-    #     #页面加载完成时将数据添加到stage列表中
-    #     tree_stage = ttk.Treeview(window, height=6)
-    #     S1 = Scrollbar(window, orient=HORIZONTAL)
-    #
-    #     tree_stage['xscrollcommand'] = S1.get()
-    #     S1['command'] = tree_stage.xview
-    #     S1.place(x=530, y=314)
-    #
-    #     treexml = et.parse(Stage_file)
-    #     root = treexml.getroot()
-    #     for child in root:
-    #         myid=tree_stage.insert("", num, text=child.attrib['id'])
-    #         num+=1
-    #         for i in child:
-    #             myidx1 = tree_stage.insert(myid, num1, text=i.attrib['id'])
-    #             num1+=1
-    #             try:
-    #                 for s in i:
-    #                     myidx2 = tree_stage.insert(myidx1, num2, text=s.attrib['id'])
-    #                     num2+=1
-    #             except KeyError:
-    #                 pass
-    # except Exception as e:
-    #     pass
+    myTest = uti.TreeListBox(window, 'Data', d_dict, stage_file, tree_stage, container_tree)
+
 
     #页面加载时将单据的数据添tree_total列表中
     try:
@@ -146,30 +126,34 @@ def indexUI(user_file,bills_file,stage_file):
     except Exception:
         pass
 
-
     # 添加用户
     def addUser():
-        sex = '男' if int(user_ui.var_sex.get()) == 1 else '女'
-        if  (user_ui.var_username.get() =='') | (user_ui.var_acronym.get()=='') | (sex=='') | (user_ui.var_charge.get()==''):
-            tk.messagebox.showinfo(title='提示',message='请填写相关数据，再进行添加!')
-        elif uti.check(user_ui.var_ReauthenticationTime.get())!=True:
-            tk.messagebox.showinfo(title='提示',message='认证时间错误,请重新输入!')
-        elif uti.check(user_ui.var_charge.get())!=True:
-            tk.messagebox.showinfo(title='提示',message='收费标准错误,请重新输入!')
-        else:
-            ss=attorney.Attorney(
-                user_ui.var_username.get(),
-                user_ui.var_acronym.get(),
-                sex,
-                user_ui.var_post.get(),
-                user_ui.var_ReauthenticationTime.get(),
-                float(user_ui.var_charge.get())/60)
-            bills_ui.users.append(user_ui.var_username.get())#将添加的用户添加到单据页面用户下拉列表框
-            bills_ui.bills_ui(bills_page)
-            ss.save(User_file,user_dict)#将数据保存到txt文件中
-            tk.messagebox.showinfo(title='提示',message='添加成功!')
-            lbUserss.insert('end',user_ui.var_username.get())
-            cancels()
+        try:
+           user_dict[user_ui.var_username.get()]
+           tk.messagebox.showinfo(title='提示', message='用户已存在')
+        except KeyError:
+            sex = '男' if int(user_ui.var_sex.get()) == 1 else '女'
+            if  (user_ui.var_username.get() =='') | (user_ui.var_acronym.get()=='') | (sex=='') | (user_ui.var_charge.get()==''):
+                tk.messagebox.showinfo(title='提示',message='请填写相关数据，再进行添加!')
+            elif uti.check(user_ui.var_ReauthenticationTime.get())!=True:
+                tk.messagebox.showinfo(title='提示',message='认证时间错误,请重新输入!')
+            elif uti.check(user_ui.var_charge.get())!=True:
+                tk.messagebox.showinfo(title='提示',message='收费标准错误,请重新输入!')
+            # elif user_dict[user_ui.var_username.get()]
+            else:
+                ss=attorney.Attorney(
+                    user_ui.var_username.get(),
+                    user_ui.var_acronym.get(),
+                    sex,
+                    user_ui.var_post.get(),
+                    user_ui.var_ReauthenticationTime.get(),
+                    float(user_ui.var_charge.get())/60)
+                bills_ui.users.append(user_ui.var_username.get())#将添加的用户添加到单据页面用户下拉列表框
+                bills_ui.bills_ui(bills_page)
+                ss.save(User_file,user_dict)#将数据保存到txt文件中
+                tk.messagebox.showinfo(title='提示',message='添加成功!')
+                lbUserss.insert('end',user_ui.var_username.get())
+                cancels()
 
     # 添加用户页面_清空按钮
     def cancels():
@@ -225,6 +209,9 @@ def indexUI(user_file,bills_file,stage_file):
 
     # 添加Stage
     def addstageDate():
+        tree = stage.read_xml(stage_file)
+        nodes = stage.find_nodes(tree, ".//")
+        result_nodes = stage.get_node_by_keyvalue(nodes, {"id": 'Stage'+str(stage_ui.var_stageID.get())})
 
         if stage_ui.var_stageID.get() == '':
             tk.messagebox.showinfo(title='提示', message='请填写编号!')
@@ -246,6 +233,8 @@ def indexUI(user_file,bills_file,stage_file):
             stage_ui.var_stage_endDate_y.get() + ('0' + stage_ui.var_stage_endDate_m.get() if len(
                 stage_ui.var_stage_endDate_m.get()) == 1 else stage_ui.var_stage_endDate_m.get())):
             tk.messagebox.showinfo(title='提示', message='开始时间不能大于结束时间!')
+        elif result_nodes !=[] :
+            tk.messagebox.showinfo(title='提示',message='该Stage已存在!')
         else:
             try:
                 dom = xml.dom.minidom.parse(stage_file)
@@ -258,7 +247,7 @@ def indexUI(user_file,bills_file,stage_file):
                                            end_month,
                                          'Stage' + str(stage_ui.var_stageID.get())
                                )
-                # tree_stage.insert("", num, text='Stage' + stage_ui.var_stageID.get())
+                show_stage_data()
                 tk.messagebox.showinfo(title='提示',message='添加成功!')
                 wipe_data()#清空数据
             except xml.parsers.expat.ExpatError as e:
@@ -344,38 +333,34 @@ def indexUI(user_file,bills_file,stage_file):
         except Exception:
             pass
 
-    # # 显示stage
-    # def show_stage_data():
-    #     num=0
-    #     num1=0
-    #     num2 = 0
-    #     try:
-    #         items = tree_stage.get_children()
-    #         [tree_stage.delete(item) for item in items]
-    #         treexml = et.parse(Stage_file)
-    #         root = treexml.getroot()
-    #         for child in root:
-    #             myid = tree_stage.insert("", num, text=child.attrib['id'])
-    #             num+=1
-    #             for i in child:
-    #                 myidx1 = tree_stage.insert(myid, num1, text=i.attrib['id'])
-    #                 num1+=1
-    #                 for s in i:
-    #                     myidx2 = tree_stage.insert(myidx1, num2, text=s.attrib['id'])
-    #                     num2+=1
-    #     except Exception as e:
-    #         pass
+    # 显示stage
+    def show_stage_data():
+        treexml = et.parse(stage_file)
+        root = treexml.getroot()
+        d_dict = {}
+        node = []
+        for child in root:
+            s = []
+            data = child.attrib['id']
+            node.append(data)
+            for i in child:
+                data1 = i.attrib['id']
+                s.append(data1)
+                d_dict[data] = s
+        d_dict['Data'] = node
+        items = tree_stage.get_children()
+        [tree_stage.delete(item) for item in items]
+        myTest = uti.TreeListBox(window, 'Data', d_dict, stage_file, tree_stage, container_tree)
 
     # 删除Stage
     def removeStageDate():
-        pass
-        # flagDao = stage.FlagDao(stage_file)
-        # flagDao.deleteTagByName('Stage'+str(stage_ui.var_stageID.get()))
-        # items = tree_stage.get_children()
-        # [tree_stage.delete(item) for item in items]
-        # show_stage_data()
-        # tk.messagebox.showinfo(title='提示',message='删除成功!')
-        # wipe_data()
+        flagDao = stage.FlagDao(stage_file)
+        flagDao.deleteTagByName('Stage'+str(stage_ui.var_stageID.get()))
+        items = tree_stage.get_children()
+        [tree_stage.delete(item) for item in items]
+        show_stage_data()
+        tk.messagebox.showinfo(title='提示',message='删除成功!')
+        wipe_data()
 
     # 添加收据单
     def confirms():
@@ -523,9 +508,6 @@ def indexUI(user_file,bills_file,stage_file):
                 result_nodes = stage.get_node_by_keyvalue(nodes, {"serialNumber":bills_ui.var_serialNum.get()})
                 stage.change_node_properties(result_nodes,{"Date":str(date_y)+'-'+str(date_m)+'-'+str(date_d),
                                                            'FeeEarners':bills_ui.var_user.get(),
-
-
-
                                                            'Narrative':bills_ui.var_incident.get(),
                                                            'Other':str(int(bills_ui.var_copying.get())+int(bills_ui.var_filing.get())+int(bills_ui.var_serving.get())),
                                                            'Time': str(time),
@@ -602,13 +584,13 @@ def indexUI(user_file,bills_file,stage_file):
     # 退出
     def exita():
         pass
-    #
-    # def choice (event):
-    #     global value
-    #     global valueobj
-    #     valueobj=event.widget.selection()
-    #     for idx in valueobj:
-    #         value=tree_stage.item(idx)["text"]
+
+    def choice (event):
+        global value
+        global valueobj
+        valueobj=event.widget.selection()
+        for idx in valueobj:
+            value=tree_stage.item(idx)["text"]
 
     # 将值赋值到相关控件中
     def callUpdateUser():
@@ -626,19 +608,19 @@ def indexUI(user_file,bills_file,stage_file):
 
     #查看节点的数据
     def trefun(event):
-        stageUI()
-        data=stage.show_data(stage_file)
+        data = stage.show_data(stage_file)
         values = event.widget.selection()
         for idx in values:
-
-            stage_ui.var_stageID.set(myTest.item(idx)["text"][5:])
-            stage_ui.var_stageName.set(data[myTest.item(idx)["text"]][2])
-            stage_ui.var_stageStartDate_y.set(data[myTest.item(idx)["text"]][0][:4])
-            stage_ui.var_stageStartDate_m.set(data[myTest.item(idx)["text"]][0][5:7])
-            stage_ui.var_stage_endDate_y.set(data[myTest.item(idx)["text"]][0][8:12])
-            stage_ui.var_stage_endDate_m.set(data[myTest.item(idx)["text"]][0][13:])
-
-
+           if str(tree_stage.item(idx)["text"][:5]) != 'Stage':
+               pass
+           else:
+                stageUI()
+                stage_ui.var_stageID.set(tree_stage.item(idx)["text"][5:])
+                stage_ui.var_stageName.set(data[tree_stage.item(idx)["text"]][2])
+                stage_ui.var_stageStartDate_y.set(data[tree_stage.item(idx)["text"]][0][:4])
+                stage_ui.var_stageStartDate_m.set(data[tree_stage.item(idx)["text"]][0][5:7])
+                stage_ui.var_stage_endDate_y.set(data[tree_stage.item(idx)["text"]][0][8:12])
+                stage_ui.var_stage_endDate_m.set(data[tree_stage.item(idx)["text"]][0][13:])
 
     #删除子节点
     def delete_node():
@@ -652,7 +634,7 @@ def indexUI(user_file,bills_file,stage_file):
             target_del_node = stage.del_node_by_tagkeyvalue(del_parent_nodes,'type' ,{"id": value})
             stage.write_xml(tree, stage_file)
             tk.messagebox.showinfo(title='提示',message='删除成功!')
-            # show_stage_data()
+            show_stage_data()
             value = ''
             valueobj = ''
 
@@ -673,7 +655,7 @@ def indexUI(user_file,bills_file,stage_file):
                 tk.messagebox.showinfo(title='提示',message='修改成功!')
                 var_update_node.set('')
                 root.destroy()
-                # show_stage_data()
+                show_stage_data()
                 value=''
                 valueobj=''
 
@@ -732,8 +714,9 @@ def indexUI(user_file,bills_file,stage_file):
         cancel_i.place(x=290, y=275)
 
     var_update_node = tk.StringVar()    #修改节点的数据
+
     #鼠标右键菜单
-    def _right_key(event):
+    def right_key(event):
         menubar = Menu(window, tearoff=False)
         menubar.add_command(label='修改',command = update_node)
         menubar.add_command(label='删除',command = delete_node)
@@ -798,7 +781,11 @@ def indexUI(user_file,bills_file,stage_file):
     removeUser.place(x=160, y=220)
     updateUser.place(x=240, y=220)
 
+    container_tree.place(x=520, y=168)
 
+    tree_stage.bind("<Double-Button-1>", trefun)
+    tree_stage.bind("<<TreeviewSelect>>", choice)
+    tree_stage.bind("<Button-3>", right_key)
 
     # 导航条
     men = tk.Menu(window)
