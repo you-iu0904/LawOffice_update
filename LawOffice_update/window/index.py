@@ -694,7 +694,7 @@ def indexUI(user_file,bills_file,stage_file):
     def pdfWindow():
         def confirmpdf():
             if var_pdftitle.get() != '' and var_pdfid.get() != '':
-                uti.exportPDF(var_pdftitle.get(),var_pdfid.get(),user_dict)
+                uti.exportPDF(var_pdftitle.get(),var_pdfid.get(),user_dict,stage_file)
                 var_pdftitle.set('')
                 var_pdfid.set('')
                 PDFwindow.destroy()
