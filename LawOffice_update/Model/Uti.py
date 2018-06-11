@@ -2,7 +2,12 @@ import string
 import tkinter as tk
 import tkinter.ttk as ttk
 import tkinter.font as tk_font
-
+from reportlab.pdfbase.ttfonts import TTFont
+from reportlab.lib.styles import getSampleStyleSheet
+from reportlab.lib import colors
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer,Image,Table,TableStyle
+from reportlab.pdfbase import pdfmetrics, ttfonts
+pdfmetrics.registerFont(TTFont('msyh', 'STSONG.TTF'))
 import Model.Stage as stage
 import window.StageUI as stage_ui
 from xml.etree import ElementTree as et
@@ -62,3 +67,32 @@ class TreeListBox:
         except KeyError:
             pass
         self.level -= 1
+
+#导出PDF
+def exportPDF(title,id,user_dict):
+    story = []
+    styles = getSampleStyleSheet()
+    #导出标题和编号
+    story.append(Paragraph(str(title) + ': ' + str(id), styles['Heading1']))
+
+    # 打印用户信息
+    com = [['', '', '', ''], ['Fee Earners', 'Admitted time', 'Title', 'Hourly Rate']]
+    for i in user_dict:
+        ss = []
+        ss.append(i + '(' + str(user_dict[i][0]) + ')')
+        ss.append(str(user_dict[i][1]))
+        ss.append(str(user_dict[i][2]))
+        ss.append('$' + str(user_dict[i][4] * 60))
+        com.append(ss)
+    component_table = Table(com, colWidths=[140, 140, 140, 140, 140])
+    component_table.setStyle(TableStyle([
+        ('FONTSIZE', (0, 0), (-1, -1), 12),
+        ('FONTNAME', (0, 0), (-1, -1), 'msyh'),
+        ('GRID', (0, 2), (4, 0), 0.5, colors.black)
+    ]))
+    story.append(component_table)
+
+
+
+    doc = SimpleDocTemplate('导出数据.pdf')
+    doc.build(story)

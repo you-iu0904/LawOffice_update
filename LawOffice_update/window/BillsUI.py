@@ -1,6 +1,7 @@
 from tkinter import ttk
 import tkinter as tk
 
+
 var_serialNum=''
 var_user=''
 var_incident=''
@@ -105,3 +106,4 @@ def bills_ui(bills_page):
     serving_la.place(x=50, y=245)
     serving_entry = tk.Entry(bills_page, textvariable=var_serving)
     serving_entry.place(x=150, y=245)
+

@@ -98,7 +98,6 @@ def indexUI(user_file,bills_file,stage_file):
                         d_dict[data1] = data1_list
                 except KeyError:
                     pass
-
         d_dict['Data'] = node
 
     container_tree = tk.Frame(window, width=170, height=180)
@@ -340,13 +339,24 @@ def indexUI(user_file,bills_file,stage_file):
         d_dict = {}
         node = []
         for child in root:
-            s = []
+            data_list = []
+            data1_list = []
             data = child.attrib['id']
             node.append(data)
-            for i in child:
-                data1 = i.attrib['id']
-                s.append(data1)
-                d_dict[data] = s
+            try:
+                for i in child:
+                    data1 = i.attrib['id']
+                    data_list.append(data1)
+                    d_dict[data] = data_list
+            except KeyError:
+                pass
+                try:
+                    for s in i:
+                        data2 = s.attrib['id']
+                        data1_list.append(data2)
+                        d_dict[data1] = data1_list
+                except KeyError:
+                    pass
         d_dict['Data'] = node
         items = tree_stage.get_children()
         [tree_stage.delete(item) for item in items]
@@ -444,8 +454,9 @@ def indexUI(user_file,bills_file,stage_file):
             stage.add_child_node(result_nodes, a)
             #添加xml
             stage.write_xml(tree, stage_file)
-            # tree_stage.insert(valueobj,0,text=bills_ui.var_bills_type.get())
+            show_stage_data()
             tk.messagebox.showinfo(title='提示',message='添加成功!')
+            bills_ui.var_bills_type.set('')
             value=''
             valueobj=''
 
@@ -575,11 +586,11 @@ def indexUI(user_file,bills_file,stage_file):
 
     # 导出PDF
     def pdfui():
-        pass
+        pdfWindow()
 
     # 显示全部数据
     def overall_data():
-        pass
+        sys.exit()
 
     # 退出
     def exita():
@@ -664,7 +675,6 @@ def indexUI(user_file,bills_file,stage_file):
                 root.destroy()
                 value=''
                 valueobj=''
-
             root = tk.Toplevel(window)
             root.geometry('270x100')
             update_la = tk.Label(root, text='Type:').place(x=20, y=20)
@@ -676,6 +686,42 @@ def indexUI(user_file,bills_file,stage_file):
             cancel.place(x=100,y=60)
             root.resizable(False, False)
             root.mainloop()
+
+    # 导出PDF_标题编号输入框
+    var_pdftitle = tk.StringVar()
+    var_pdfid = tk.StringVar()
+
+    def pdfWindow():
+        def confirmpdf():
+            if var_pdftitle.get() != '' and var_pdfid.get() != '':
+                uti.exportPDF(var_pdftitle.get(),var_pdfid.get(),user_dict)
+                var_pdftitle.set('')
+                var_pdfid.set('')
+                PDFwindow.destroy()
+            else:
+                tk.messagebox.showinfo(title='提示', message='请填写内容')
+        def cancelpdf():
+            var_pdftitle.set('')
+            var_pdfid.set('')
+
+        PDFwindow = tk.Toplevel(window)
+        PDFwindow.title('xxx律师所')
+        PDFwindow.geometry('500x300')
+        PDFwindow.maxsize(500, 300)
+        PDFwindow.minsize(500, 300)
+        hintLa = tk.Label(PDFwindow, text='请填写导出PDF文件标题和编号').place(x=150, y=25)
+        pdftitle_label = tk.Label(PDFwindow, text='标题:').place(x=100, y=100)
+        pdfid_label = tk.Label(PDFwindow, text='编号:').place(x=100, y=140)
+        pdftitle_entry = tk.Entry(PDFwindow, textvariable=var_pdftitle, width=35)
+        pdftitle_entry.place(x=150, y=100)
+        pdfid_entry = tk.Entry(PDFwindow, textvariable=var_pdfid, width=35)
+        pdfid_entry.place(x=150, y=140)
+        confirm = tk.Button(PDFwindow, width=6, text='确定', command=confirmpdf)
+        confirm.place(x=210, y=202)
+        cancel = tk.Button(PDFwindow, width=6, text='清空', command=cancelpdf)
+        cancel.place(x=280, y=202)
+        PDFwindow.mainloop()
+
 
     def raise_frame(frame):
         frame.tkraise()
