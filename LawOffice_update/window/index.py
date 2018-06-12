@@ -78,28 +78,37 @@ def indexUI(user_file,bills_file,stage_file):
     root = treexml.getroot()
     d_dict = {}
     node = []
-
     for child in root:
         data_list = []
         data1_list = []
+        data2_list = []
         data = child.attrib['id']
         node.append(data)
-        try:
-            for i in child:
+
+        for i in child:
+            try:
                 data1 = i.attrib['id']
                 data_list.append(data1)
                 d_dict[data] = data_list
-        except KeyError:
+            except KeyError:
                 pass
+            for s in i:
                 try:
-                    for s in i:
-                        data2 = s.attrib['id']
-                        data1_list.append(data2)
-                        d_dict[data1] = data1_list
+                    data2 = s.attrib['id']
+                    data1_list.append(data2)
+                    d_dict[data1] = data1_list
                 except KeyError:
                     pass
-        d_dict['Data'] = node
+                for k in s:
+                    try:
+                        data3 = k.attrib['id']
+                        data2_list.append(data3)
+                        d_dict[data2] = data2_list
+                    except KeyError:
+                        pass
 
+
+    d_dict['Data'] = node
     container_tree = tk.Frame(window, width=170, height=180)
     container_tree.propagate(False)
 
@@ -122,6 +131,7 @@ def indexUI(user_file,bills_file,stage_file):
                                              )
                               )
             serialNumber=bb[i].getAttribute('serialNumber')
+        print(serialNumber)
     except Exception:
         pass
 
@@ -341,22 +351,31 @@ def indexUI(user_file,bills_file,stage_file):
         for child in root:
             data_list = []
             data1_list = []
+            data2_list = []
             data = child.attrib['id']
             node.append(data)
-            try:
-                for i in child:
+
+            for i in child:
+                try:
                     data1 = i.attrib['id']
                     data_list.append(data1)
                     d_dict[data] = data_list
-            except KeyError:
-                pass
-                try:
-                    for s in i:
+                except KeyError:
+                    pass
+                for s in i:
+                    try:
                         data2 = s.attrib['id']
                         data1_list.append(data2)
                         d_dict[data1] = data1_list
-                except KeyError:
-                    pass
+                    except KeyError:
+                        pass
+                    for k in s:
+                        try:
+                            data3 = k.attrib['id']
+                            data2_list.append(data3)
+                            d_dict[data2] = data2_list
+                        except KeyError:
+                            pass
         d_dict['Data'] = node
         items = tree_stage.get_children()
         [tree_stage.delete(item) for item in items]
@@ -437,7 +456,6 @@ def indexUI(user_file,bills_file,stage_file):
                 stage.write_xml(tree, stage_file)
                 tk.messagebox.showinfo(title='提示',message='添加成功!')
                 cancel_bills()
-                int(serialNumber)+1
 
     # 添加收据单_添加下一层
     def confirm_next():
@@ -638,6 +656,8 @@ def indexUI(user_file,bills_file,stage_file):
         global value
         if value=='':
             tk.messagebox.showinfo(title='提示',message='请选择节点,再进行删除!')
+        elif value[0:5]=='Stage':
+            tk.messagebox.showinfo(title='提示',message='该节点为根节点,请双击该节点在页面进行删除!')
         else:
             tree = stage.read_xml(stage_file)
             del_parent_nodes = stage.find_nodes(tree, ".//")
@@ -653,6 +673,8 @@ def indexUI(user_file,bills_file,stage_file):
     def update_node():
         if value=='':
             tk.messagebox.showinfo(title='提示',message='请选择节点,再进行修改!')
+        elif value[0:5]=='Stage':
+            tk.messagebox.showinfo(title='提示', message='该节点为根节点,请双击该节点在页面进行修改!')
         else:
             # 确定_修改子节点
             def confirm_add_node():

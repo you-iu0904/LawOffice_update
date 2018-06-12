@@ -95,11 +95,12 @@ def exportPDF(title,id,user_dict,stage_file):
     #打印单据数据
     treexml = et.parse(stage_file)
     root = treexml.getroot()
-    for child in root:
 
+    for child in root:
         data_list=[]
         story.append(Paragraph(str(child.attrib['id'])+':'+str(child.attrib['name'])+'('+str(child.attrib['date']+')'),styles['title']))
         bissdata = [['', '', '']]
+
         for child1 in child:
             data=[]
             data.append(str(child1.attrib['id']))
@@ -111,81 +112,48 @@ def exportPDF(title,id,user_dict,stage_file):
                     bissdata.append(data)
                 except KeyError :
                     s_list = []
+                    bissdata1 = []
                     s_list.append(child2.attrib['FeeEarners'])
                     s_list.append(child2.attrib['Time'])
                     s_list.append(child2.attrib['TotalMoney'])
                     data_list.append(s_list)
-                    result_time = {}
-                    result_money = {}
+                    text(data_list, bissdata1)
+                    component_table12 = Table(bissdata1, colWidths=[150, 150, 150])
+                    story.append(component_table12)
 
-                    for d in data_list:
-                        result_time[d[0]] = round(float(result_time.get(d[0], 0)) + float(d[1]), 2)
-                        result_money[d[0]] = round(float(result_money.get(d[0], 0)) + float(d[2]), 1)
-                    l = []
-                    l.append(result_time)
-                    l.append(result_money)
-                    # dic = {}
-                    # for _ in l:
-                    #     for k, v in _.items():
-                    #         dic.setdefault(k, []).append(v)
-                    # for i in dic:
-                    #     data=[]
-                    #     data.append('            '+'(  '+str(i))
-                    #     hrs=0
-                    #     mins=0
-                    #     if float(dic[i][0])<60:
-                    #         mins=dic[i][0]
-                    #     else:
-                    #         hrs=int(float(dic[i][0])/60)
-                    #         mins=int(float(dic[i][0])%60)
-                    # data.append(str(hrs)+'       '+'hrs.')
-                    # data.append(str(mins)+'      '+'mins.')
-                    # data.append('$'+str(dic[i][1])+'  )')
-                    # bissdata.append(data)
+            component_table11 = Table(bissdata, colWidths=[150, 150, 150])
+            story.append(component_table11)
+
+        # component_table12 = Table(bissdata1, colWidths=[50, 40, 75,75, 75, 75,60])
+        # story.append(component_table12)
 
 
 
-
-                # for child3 in child2:
-                #     try:
-                #         data = []
-                #         data.append('          ' + str(child3.attrib['id']))
-                #         bissdata.append(data)
-                #     except KeyError:
-                #         s_list=[]
-                #         s_list.append(child3.attrib['FeeEarners'])
-                #         s_list.append(child3.attrib['Time'])
-                #         s_list.append(child3.attrib['TotalMoney'])
-                #         data_list.append(s_list)
-        # result_time = {}
-        # result_money = {}
-        # l = []
-        # for d in data_list:
-        #     result_time[d[0]] = round(float(result_time.get(d[0], 0)) + float(d[1]), 2)
-        #     result_money[d[0]] = round(float(result_money.get(d[0], 0)) + float(d[2]), 1)
-        # l.append(result_time)
-        # l.append(result_money)
-        # dic = {}
-        # for _ in l:
-        #     for k, v in _.items():
-        #         dic.setdefault(k, []).append(v)
-        # for i in dic:
-        #     data=[]
-        #     data.append('            '+'(  '+str(i))
-        #     hrs=0
-        #     mins=0
-        #     if float(dic[i][0])<60:
-        #         mins=dic[i][0]
-        #     else:
-        #         hrs=int(float(dic[i][0])/60)
-        #         mins=int(float(dic[i][0])%60)
-        #     data.append(str(hrs)+'       '+'hrs.')
-        #     data.append(str(mins)+'      '+'mins.')
-        #     data.append('$'+str(dic[i][1])+'  )')
-        #     bissdata.append(data)
-        #
-        component_table11 = Table(bissdata, colWidths=[80, 80, 80])
-        story.append(component_table11)
 
     doc = SimpleDocTemplate('导出数据.pdf')
     doc.build(story)
+
+def text(data_list,bissdata):
+    result_time = {}
+    result_money = {}
+    for d in data_list:
+        result_time[d[0]] = round(float(result_time.get(d[0], 0)) + float(d[1]), 2)
+        result_money[d[0]] = round(float(result_money.get(d[0], 0)) + float(d[2]), 1)
+    l = []
+    l.append(result_time)
+    l.append(result_money)
+    dic = {}
+    for _ in l:
+        for k, v in _.items():
+            dic.setdefault(k, []).append(v)
+    for i in dic:
+        data = []
+        data.append('      ' + '(  ' + str(i))
+        data.append('')
+        data.append(str(0)+'      hr.      '+str(dic[i][0])+'      mins.' if dic[i][0]<60 else str(int(dic[i][0]) / 60)+'      hr.      '+str(int(int(dic[i][0]) %60))+'      mins.')
+        data.append('')
+        data.append('$' + str(dic[i][1]) + '  )')
+        data.append('')
+        data.append('')
+    bissdata.append(data)
+

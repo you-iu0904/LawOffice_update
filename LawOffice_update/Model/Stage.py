@@ -228,8 +228,6 @@ def show_data(path):
                 data = attr.value
                 s.append(data)
         listInfos.append(s)
-
-    listInfos.pop(0)
     for i in listInfos:
         dictAttr[str(i[1])]=i
     return dictAttr
