@@ -131,7 +131,6 @@ def indexUI(user_file,bills_file,stage_file):
                                              )
                               )
             serialNumber=bb[i].getAttribute('serialNumber')
-        print(serialNumber)
     except Exception:
         pass
 
@@ -396,7 +395,7 @@ def indexUI(user_file,bills_file,stage_file):
         global value
         global  valueobj
         global serialNumber
-
+        serialNumber=int(serialNumber)+1
         if value=='' :
             tk.messagebox.showinfo(title='提示',message='请选择节点,再进行添加!')
         elif bills_ui.var_user.get()=='':
@@ -433,7 +432,7 @@ def indexUI(user_file,bills_file,stage_file):
                 tree = stage.read_xml(stage_file)
                 nodes = stage.find_nodes(tree, ".//")
                 result_nodes = stage.get_node_by_keyvalue(nodes, {"id": value})
-                a = stage.create_node("bills", {'serialNumber':str(int(serialNumber)+1),
+                a = stage.create_node("bills", {'serialNumber':str(int(serialNumber)),
                                                 'FeeEarners':bills_ui.var_user.get(),
                                                 'Narrative':bills_ui.var_incident.get(),
                                                 'Date':date_y+'-'+date_m+'-'+date_d,
@@ -442,7 +441,7 @@ def indexUI(user_file,bills_file,stage_file):
                                                 'TotalMoney':str(money)
                                                 },
                                       None)
-                tree_total.insert('', int(serialNumber)+1, values=(str(int(serialNumber)+1), bills_ui.var_user.get(),
+                tree_total.insert('', int(serialNumber), values=(str(int(serialNumber)), bills_ui.var_user.get(),
                                            date_y + '-' + date_m + '-' + date_d,
                                            str(time), bills_ui.var_incident.get(),
                                            int(bills_ui.var_copying.get()) + int(bills_ui.var_filing.get()) + int(bills_ui.var_serving.get()),
@@ -457,7 +456,7 @@ def indexUI(user_file,bills_file,stage_file):
                 tk.messagebox.showinfo(title='提示',message='添加成功!')
                 cancel_bills()
 
-    # 添加收据单_添加下一层
+    # 添加子节点_添加下一层按钮
     def confirm_next():
         global value
         global valueobj
@@ -467,6 +466,7 @@ def indexUI(user_file,bills_file,stage_file):
             tree = stage.read_xml(stage_file)
             nodes = stage.find_nodes(tree, ".//")
             result_nodes = stage.get_node_by_keyvalue(nodes, {"id": value})
+            print(result_nodes)
             a = stage.create_node("type", {'id':bills_ui.var_bills_type.get()}, None)
             # 插入到父节点之下
             stage.add_child_node(result_nodes, a)
@@ -480,7 +480,6 @@ def indexUI(user_file,bills_file,stage_file):
 
     # 删除单据
     def removeBills():
-        global serialNumber
         tree = stage.read_xml(stage_file)
         del_parent_nodes = stage.find_nodes(tree, ".//")
         # 准确定位子节点并删除之
@@ -488,7 +487,6 @@ def indexUI(user_file,bills_file,stage_file):
         stage.write_xml(tree, stage_file)
         tk.messagebox.showinfo(title='提示', message='删除成功!')
         show_bills()
-        int(serialNumber)-1
         billsUI()
         bills_ui.var_serialNum==''
 
