@@ -9,6 +9,8 @@ from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer,Image,Table,
 from reportlab.pdfbase import pdfmetrics, ttfonts
 from lxml import etree
 from xml.etree import ElementTree as et
+import os
+import PyPDF2
 pdfmetrics.registerFont(TTFont('msyh', 'STSONG.TTF'))
 import Model.Stage as stage
 import window.StageUI as stage_ui
@@ -168,8 +170,14 @@ def exportPDF(title,id,user_dict,stage_file):
     doc.build(story)
 
 def export(title,id,user_dict,stage_file):
+    nums = 0
+    totaltime = 0.0
+    totalMoney = 0.0
     story = []
     styles = getSampleStyleSheet()
+    total = [['', '', ''], ['Fee Earner', 'Total time(Hrs)', 'Total']]
+    story1=[]
+    normalStyle = styles['Normal']
     # 导出标题和编号
     story.append(Paragraph(str(title) + ': ' + str(id), styles['Heading1']))
 
@@ -194,8 +202,12 @@ def export(title,id,user_dict,stage_file):
     #打印单据数据
     tree = et.parse(stage_file)
     root = tree.getroot()
-    bissdata1 = []
+
+    suminn_time = []
+    suminn_moeny = []
     for country in root.findall('stage'):
+        stage_total = []
+        moeny = 0.0
         story.append(Paragraph('', styles['title']))
         story.append(Paragraph('', styles['title']))
         story.append(Paragraph(str(country.attrib['id']) + ':' + str(country.attrib['name']) + '(' + str(country.attrib['date'] + ')'),
@@ -209,21 +221,207 @@ def export(title,id,user_dict,stage_file):
                 data.append(i.attrib['Time'])
                 data.append(i.attrib['Narrative'])
                 data.append(i.attrib['TotalMoney'])
-
+                bissdata.append(data)
+                stage_total.append(data)
             except KeyError:
                 pass
+            for s in i:
+                try:
+                    data = []
+                    data.append(s.attrib['Date'])
+                    data.append(s.attrib['FeeEarners'])
+                    data.append(s.attrib['Time'])
+                    data.append(s.attrib['Narrative'])
+                    data.append(s.attrib['TotalMoney'])
+                    bissdata.append(data)
+                    stage_total.append(data)
+                except KeyError:
+                    pass
+                for k in s:
+                    try:
+                        data = []
+                        data.append(k.attrib['Date'])
+                        data.append(k.attrib['FeeEarners'])
+                        data.append(k.attrib['Time'])
+                        data.append(k.attrib['Narrative'])
+                        data.append(k.attrib['TotalMoney'])
+                        bissdata.append(data)
+                        stage_total.append(data)
+                    except KeyError:
+                        pass
+                    for p in k:
+                        try:
+                            data = []
+                            data.append(p.attrib['Date'])
+                            data.append(p.attrib['FeeEarners'])
+                            data.append(p.attrib['Time'])
+                            data.append(p.attrib['Narrative'])
+                            data.append(p.attrib['TotalMoney'])
+                            bissdata.append(data)
+                            stage_total.append(data)
+                        except KeyError:
+                            pass
+                        for t in p:
+                            try:
+                                data = []
+                                data.append(t.attrib['Date'])
+                                data.append(t.attrib['FeeEarners'])
+                                data.append(t.attrib['Time'])
+                                data.append(t.attrib['Narrative'])
+                                data.append(t.attrib['TotalMoney'])
+                                bissdata.append(data)
+                                stage_total.append(data)
+                            except KeyError:
+                                pass
+                            for y in t:
+                                try:
+                                    data = []
+                                    data.append(y.attrib['Date'])
+                                    data.append(y.attrib['FeeEarners'])
+                                    data.append(y.attrib['Time'])
+                                    data.append(y.attrib['Narrative'])
+                                    data.append(y.attrib['TotalMoney'])
+                                    bissdata.append(data)
+                                    stage_total.append(data)
+                                except KeyError:
+                                    pass
+                                for o in y:
+                                    try:
+                                        data = []
+                                        data.append(o.attrib['Date'])
+                                        data.append(o.attrib['FeeEarners'])
+                                        data.append(o.attrib['Time'])
+                                        data.append(o.attrib['Narrative'])
+                                        data.append(o.attrib['TotalMoney'])
+                                        bissdata.append(data)
+                                        stage_total.append(data)
+                                    except KeyError:
+                                        pass
+        result_time = {}
+        result_money = {}
+        l = []
+        for d in stage_total:
+            result_time[d[1]] = round(float(result_time.get(d[1], 0)) + float(d[2]), 2)
+            result_money[d[1]] = round(float(result_money.get(d[1], 0)) + float(d[4]), 1)
+        l.append(result_time)
+        l.append(result_money)
+
+        for y in result_time:
+            data = []
+            data.append(y)
+            data.append(result_time[y])
+            suminn_time.append(data)
+        for y2 in result_money:
+            data = []
+            data.append(y2)
+            data.append(result_money[y2])
+            suminn_moeny.append(data)
+        dic = {}
+        for _ in l:
+            for k, v in _.items():
+                dic.setdefault(k, []).append(v)
+        money_list = [['', '', ''], ['Fee Earners', 'Hours', 'Total']]
+        for ss in dic:
+            totaltime += dic[ss][0]
+            totalMoney += dic[ss][1]
+            s = []
+            s.append(ss)
+            s.append(str(dic[ss][0]))
+            s.append('$' + str(dic[ss][1]))
+            money_list.append(s)
+            moeny += dic[ss][1]
+        moeny_o = []
+        moeny_o.append('')
+        moeny_o.append('')
+        moeny_o.append('TOTAL:$' + str(moeny))
+        money_list.append(moeny_o)
+        li = ['', '', '']
+        money_list.append(li)
+        money_list1 = [['Stage Summary:', '', '']]
+
         component_table_bills = Table(bissdata, colWidths=[70, 70, 40, 290, 90])
         component_table_bills.setStyle(TableStyle([
             ('FONTSIZE', (0, 0), (-1, -1), 12),
             ('FONTNAME', (0, 0), (-1, -1), 'msyh'),
             ('GRID', (0, 2), (4, 0), 0.5, colors.black)
         ]))
+
         story.append(component_table_bills)
+        story.append(Paragraph('———————————————————————————————', normalStyle))
+        component_tablel2 = Table(money_list, colWidths=[180, 180, 180])
+        component_tablel2.setStyle(TableStyle([
+            ('FONTSIZE', (0, 0), (-1, -1), 12),
+            ('FONTNAME', (0, 0), (-1, -1), 'msyh'),
+            ('GRID', (0, 2), (3, 0), 0.5, colors.black)
+        ]))
+        component_tablel3 = Table(money_list1, colWidths=[180, 180, 180])
+        component_tablel3.setStyle(TableStyle([
+            ('FONTSIZE', (0, 0), (-1, -1), 20),
+            ('FONTNAME', (0, 0), (-1, -1), 'msyh'),
+            ('FONTSIZE', (0, 0), (-1, -1), 12),  # 字体大小
+        ]))
+        story.append(component_tablel3)
+        story.append(component_tablel2)
+
+        nums += 1
+        doc = SimpleDocTemplate('PDF/导出数据' + str(nums) + '.pdf')
+        doc.build(story)
+
+    p = []
+    result_time = dict()
+    for data in suminn_time:
+        result_time[data[0]] = float(result_time.get(data[0], 0)) + float(data[1])
+    result_money = dict()
+    for data in suminn_moeny:
+        result_money[data[0]] = float(result_money.get(data[0], 0)) + float(data[1])
+    sum = []
+    sum.append(result_time)
+    sum.append(result_money)
+    dic1 = {}
+    for _ in sum:
+        for k, v in _.items():
+            dic1.setdefault(k, []).append(v)
+    for i in dic1:
+        value = []
+        value.append(i)
+        value.append(round(dic1[i][0], 2))
+        value.append('$' + str(dic1[i][1]))
+        total.append(value)
+    tota2 = []
+
+    p.append('')
+    p.append('Total: ' + str(round(totaltime, 2)))
+    p.append('$' + str(round(totalMoney, 2)))
+    tota2.append(p)
+    summ = [['Summary: ', '', '']]
+    component_tablel4 = Table(summ, colWidths=[180, 180, 180])
+    component_tablel3 = Table(total, colWidths=[180, 180, 180])
+    component_tablel5 = Table(tota2, colWidths=[180, 180, 180])
+    component_tablel3.setStyle(TableStyle([
+        ('FONTSIZE', (0, 0), (-1, -1), 12),
+        ('FONTNAME', (0, 0), (-1, -1), 'msyh'),
+        ('GRID', (0, 2), (2, 0), 0.5, colors.black)
+    ]))
+    story1.append(component_tablel4)
+    story1.append(component_tablel3)
+    story1.append(Paragraph('———————————————————————————————', normalStyle))
+    story1.append(component_tablel5)
+    doc1 = SimpleDocTemplate(os.getcwd() + '/PDF/导出数据' + str(nums + 1) + '.pdf')
+    doc1.build(story1)
+    path = os.getcwd() + '/PDF'  # 文件夹目录
+    files = os.listdir(path)  # 得到文件夹下的所有文件名称
+    s = []
+    for file in files:  # 遍历文件夹
+        s.append(file)
+    merger = PyPDF2.PdfFileMerger()
+    for filename in s:
+        merger.append(PyPDF2.PdfFileReader(os.getcwd() + '/PDF' + '/' + filename))
+        os.remove(os.getcwd() + '/PDF' + '/' + filename)
+    merger.write('导出数据2.pdf')
 
 
 
-    doc = SimpleDocTemplate('导出数据2.pdf')
-    doc.build(story)
+
 #统计单据
 def statistics(data_list,bissdata):
     result_time = {}
