@@ -132,7 +132,7 @@ def exportPDF(title,id,user_dict,stage_file):
                 for k in s:
                     try:
                         data3 = []
-                        data3.append('      ' + str(k.attrib['id']))
+                        data3.append('            ' + str(k.attrib['id']))
                         data3.append('')
                         data3.append('')
                         bissdata1.append(data3)
@@ -147,7 +147,7 @@ def exportPDF(title,id,user_dict,stage_file):
                     for z in k:
                         try:
                             data4 = []
-                            data4.append('      ' + str(z.attrib['id']))
+                            data4.append('             ' + str(z.attrib['id']))
                             data4.append('')
                             data4.append('')
                             bissdata1.append(data4)
@@ -204,9 +204,22 @@ def export(title,id,user_dict,stage_file):
         for i in country:
             try:
                 data = []
+                data.append(i.attrib['Date'])
                 data.append(i.attrib['FeeEarners'])
+                data.append(i.attrib['Time'])
+                data.append(i.attrib['Narrative'])
+                data.append(i.attrib['TotalMoney'])
+
             except KeyError:
                 pass
+        component_table_bills = Table(bissdata, colWidths=[70, 70, 40, 290, 90])
+        component_table_bills.setStyle(TableStyle([
+            ('FONTSIZE', (0, 0), (-1, -1), 12),
+            ('FONTNAME', (0, 0), (-1, -1), 'msyh'),
+            ('GRID', (0, 2), (4, 0), 0.5, colors.black)
+        ]))
+        story.append(component_table_bills)
+
 
 
     doc = SimpleDocTemplate('导出数据2.pdf')
@@ -227,8 +240,8 @@ def statistics(data_list,bissdata):
             dic.setdefault(k, []).append(v)
     for i in dic:
         datas = []
-        datas.append('            ' + '(  ' + str(i))
-        datas.append(str(0)+'      hr.      '+str(dic[i][0])+'      mins.' if dic[i][0]<60 else str(int(dic[i][0]) / 60)+'      hr.      '+str(int(int(dic[i][0]) %60))+'      mins.')
+        datas.append('                   ' + '(  ' + str(i))
+        datas.append('        '+str('-')+'      hr.      '+str(dic[i][0])+'      mins.' if dic[i][0]<60 else '        '+str(int(dic[i][0]) / 60)+'      hr.      '+str(int(int(dic[i][0]) %60))+'      mins.')
         datas.append('$' + str(dic[i][1]) + '  )')
         bissdata.append(datas)
 
