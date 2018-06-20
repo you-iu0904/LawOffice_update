@@ -70,7 +70,11 @@ def indexUI(user_file,stage_file):
     vbar = ttk.Scrollbar(window, orient=VERTICAL, command=tree_total.yview)
     lbUserss = tk.Listbox(window, height=9, width=24)
 
-
+    #写入错误日志
+    logging.basicConfig(level=logging.WARNING,
+                        filename='log.txt',
+                        filemode='a',
+                        format='%(asctime)s - %(filename)s[line:%(lineno)d] - %(levelname)s: %(message)s')
 
     #页面加载时将数据添加到user_dict字典中
     user_obj=open(User_file,'r')
