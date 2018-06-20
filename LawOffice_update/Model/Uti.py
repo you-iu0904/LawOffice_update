@@ -11,10 +11,66 @@ from lxml import etree
 from xml.etree import ElementTree as et
 import os
 import PyPDF2
+import operator
+from operator import itemgetter
+
 pdfmetrics.registerFont(TTFont('msyh', 'STSONG.TTF'))
 import Model.Stage as stage
 import window.StageUI as stage_ui
 
+
+
+# 排序_升序
+def callBack(value,tree):
+    date1 = []
+    t = tree.get_children()
+    for i in t:
+        date1.append(tree.item(i, 'values'))
+    items = tree.get_children()
+    [tree.delete(item) for item in items]
+    ss = {}
+    content = []
+    for s in date1:
+        date2 = []
+        date2.append(s[0])
+        date2.append(s[1])
+        date2.append(s[2])
+        date2.append(int(s[3]))
+        date2.append(s[4])
+        date2.append(int(s[5]))
+        date2.append(float(s[6]))
+        ss[s[0]] = date2
+    for i in ss.values():
+        content.append(i)
+    content.sort(key=operator.itemgetter(value), reverse=True)
+    for s in content:
+        tree.insert('', 0, values=(s[0], s[1], s[2], s[3], s[4], s[5], s[6]))
+
+# 排序_降序
+def callBack_order(value,tree):
+    date1 = []
+    t = tree.get_children()
+    for i in t:
+        date1.append(tree.item(i, 'values'))
+    items = tree.get_children()
+    [tree.delete(item) for item in items]
+    ss = {}
+    content = []
+    for s in date1:
+        date2 = []
+        date2.append(s[0])
+        date2.append(s[1])
+        date2.append(s[2])
+        date2.append(int(s[3]))
+        date2.append(s[4])
+        date2.append(int(s[5]))
+        date2.append(float(s[6]))
+        ss[s[0]] = date2
+    for i in ss.values():
+        content.append(i)
+    content.sort(key=operator.itemgetter(value))
+    for s in content:
+        tree.insert('', 0, values=(s[0], s[1], s[2], s[3], s[4], s[5], s[6]))
 
 #判断字符串内容是否为数字
 def check(a):
@@ -65,7 +121,6 @@ class TreeListBox:
             self.tree.column('#0', width=col_w)
         # -----------------
         try:
-
             for element in sorted(self.dict_group[parent]):
                 self.build_tree(element, id)
         except KeyError:
@@ -211,7 +266,7 @@ def export(title,id,user_dict,stage_file):
         story.append(Paragraph('', styles['title']))
         story.append(Paragraph('', styles['title']))
         story.append(Paragraph(str(country.attrib['id']) + ':' + str(country.attrib['name']) + '(' + str(country.attrib['date'] + ')'),
-            styles['title']))
+                               styles['title']))
         bissdata = [['', '', '', '', ''], ['Date', 'Fee Earner', 'Hours', 'Narrative', 'Total']]
         for i in country:
             try:

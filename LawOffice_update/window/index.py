@@ -52,20 +52,24 @@ def indexUI(user_file,stage_file):
 
     window = tk.Tk()
     window.title("xxx律师所")
-    window.geometry('690x600')
+    window.geometry('690x620')
     window.resizable(False, False)
 
     bills_page = Frame(window, width=500, height=320)
     adduser_page = Frame(window, width=500, height=320)
     stage_page = Frame(window, width=500, height=320)
+
     rests_page=Frame(window, width=500, height=320)
 
     User_file=user_file
-
     Stage_file=stage_file
 
-    tree_total = ttk.Treeview(window, show="headings", height=13)
+
+    tree_total = ttk.Treeview(window, show="headings", height=12)
+
+    vbar = ttk.Scrollbar(window, orient=VERTICAL, command=tree_total.yview)
     lbUserss = tk.Listbox(window, height=9, width=24)
+
 
 
     #页面加载时将数据添加到user_dict字典中
@@ -922,5 +926,48 @@ def indexUI(user_file,stage_file):
     tree_total.heading('Rests', text='Rests')
     tree_total.heading('Total', text='Total')
     tree_total.place(x=0, y=350)
+
+    # 排序_升序
+    def call_back(event):
+        try:
+            if 140 >= event.x >= 64 and 22 >= event.y >= 1:  # 用户排序
+                uti.callBack(1, tree_total)
+            elif 529 >= event.x >= 331 and 23 >= event.y >= 1:  # 事件名称
+                uti.callBack(4, tree_total)
+            elif 229 >= event.x >= 148 and 23 >= event.y >= 1:  # 工作日期
+                uti.callBack(2, tree_total)
+            elif 321 >= event.x >= 239 and 23 >= event.y >= 1:  # 服务时间
+                uti.callBack(3, tree_total)
+            elif 611 >= event.x >= 541 and 23 >= event.y >= 1:  # 其他费用
+                uti.callBack(5, tree_total)
+            elif 686 >= event.x >= 626 and 23 >= event.y >= 1:  # 总共费用
+                uti.callBack(6, tree_total)
+            else:
+                pass
+        except Exception:
+            pass
+
+    # 排序_降序
+    def callback_order(event):
+        try:
+            if 140 >= event.x >= 64 and 22 >= event.y >= 2:  # 用户排序
+                uti.callBack_order(1, tree_total)
+            elif 529 >= event.x >= 331 and 23 >= event.y >= 1:  # 事件名称
+                uti.callBack_order(4, tree_total)
+            elif 229 >= event.x >= 148 and 23 >= event.y >= 1:  # 工作日期
+                uti.callBack_order(2, tree_total)
+            elif 321 >= event.x >= 239 and 23 >= event.y >= 1:  # 服务时间
+                uti.callBack_order(3, tree_total)
+            elif 611 >= event.x >= 541 and 23 >= event.y >= 1:  # 其他费用
+                uti.callBack_order(5, tree_total)
+            elif 686 >= event.x >= 626 and 23 >= event.y >= 1:  # 总共费用
+                uti.callBack_order(6, tree_total)
+            else:
+                pass
+        except Exception:
+            pass
+
+    tree_total.bind("<Button-1>", call_back)
+    tree_total.bind("<Double-Button-1>", callback_order)
 
     window.mainloop()
