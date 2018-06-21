@@ -68,7 +68,8 @@ def indexUI(user_file,stage_file):
     tree_total = ttk.Treeview(window, show="headings", height=12)
 
     vbar = ttk.Scrollbar(window, orient=VERTICAL, command=tree_total.yview)
-    lbUserss = tk.Listbox(window, height=9, width=24)
+    scrolly = Scrollbar(window)
+    lbUserss = tk.Listbox(window, height=9, width=24,yscrollcommand=scrolly.set)
 
     #写入错误日志
     logging.basicConfig(level=logging.WARNING,
@@ -160,19 +161,23 @@ def indexUI(user_file,stage_file):
                 tk.messagebox.showinfo(title='提示',message='收费标准错误,请重新输入!')
             # elif user_dict[user_ui.var_username.get()]
             else:
-                ss=attorney.Attorney(
-                    user_ui.var_username.get(),
-                    user_ui.var_acronym.get(),
-                    sex,
-                    user_ui.var_post.get(),
-                    user_ui.var_ReauthenticationTime.get(),
-                    float(user_ui.var_charge.get())/60)
-                bills_ui.users.append(user_ui.var_username.get())#将添加的用户添加到单据页面用户下拉列表框
-                bills_ui.bills_ui(bills_page)
-                ss.save(User_file,user_dict)#将数据保存到txt文件中
-                tk.messagebox.showinfo(title='提示',message='添加成功!')
-                lbUserss.insert('end',user_ui.var_username.get())
-                cancels()
+                try:
+                    ss=attorney.Attorney(
+                        user_ui.var_username.get(),
+                        user_ui.var_acronym.get(),
+                        sex,
+                        user_ui.var_post.get(),
+                        user_ui.var_ReauthenticationTime.get(),
+                        float(user_ui.var_charge.get())/60)
+                    bills_ui.users.append(user_ui.var_username.get())#将添加的用户添加到单据页面用户下拉列表框
+                    bills_ui.bills_ui(bills_page)
+                    ss.save(User_file,user_dict)#将数据保存到txt文件中
+                    tk.messagebox.showinfo(title='提示',message='添加成功!')
+                    lbUserss.insert('end',user_ui.var_username.get())
+                    cancels()
+                except Exception as e:
+                    tk.messagebox.showinfo(title='错误', message='添加失败!')
+                    logging.error('添加用户:' + repr(e))
 
     # 添加用户页面_清空按钮
     def cancels():
@@ -185,53 +190,65 @@ def indexUI(user_file,stage_file):
 
     #修改用户
     def updateUser():
-        sex='男' if int(user_ui.var_sexs.get()) == 1 else '女'
-        if  (user_ui.var_usernames.get() =='') | (user_ui.var_acronyms.get()=='')  | (sex=='') |(user_ui.var_charges.get()==''):
-            tk.messagebox.showinfo(title='提示',message='请填写相关数据，再进行添加!')
-        elif  len(user_ui.var_ReauthenticationTimes.get())<4:
-            tk.messagebox.showinfo(title='提示',message='请输入正确的认证时间!')
-        elif uti.check(user_ui.var_ReauthenticationTimes.get())!=True:
-            tk.messagebox.showinfo(title='提示',message='认证时间错误,请重新输入!')
-        else:
-            user_dict[user_ui.var_usernames.get()][0] = user_ui.var_acronyms.get()
-            user_dict[user_ui.var_usernames.get()][1] =  user_ui.var_ReauthenticationTimes.get()
-            user_dict[user_ui.var_usernames.get()][2] = user_ui.var_posts.get()
-            user_dict[user_ui.var_usernames.get()][3] = sex
-            user_dict[user_ui.var_usernames.get()][4] = float(user_ui.var_charges.get())/60
-            fileobj = open(user_file, 'w',encoding="gbk")
-            fileobj.write(str(user_dict))
-            fileobj.close()
-            tk.messagebox.showinfo(title='提示', message='修改成功!')
-            user_ui.clear_data()
-            userUI()
+        try:
+            sex='男' if int(user_ui.var_sexs.get()) == 1 else '女'
+            if  (user_ui.var_acronyms.get()=='')  | (sex=='') |(user_ui.var_charges.get()==''):
+                tk.messagebox.showinfo(title='提示',message='请填写相关数据，再进行添加!')
+            elif  len(user_ui.var_ReauthenticationTimes.get())<4:
+                tk.messagebox.showinfo(title='提示',message='请输入正确的认证时间!')
+            elif uti.check(user_ui.var_ReauthenticationTimes.get())!=True:
+                tk.messagebox.showinfo(title='提示',message='认证时间错误,请重新输入!')
+            elif user_ui.var_usernames.get()=='':
+                tk.messagebox.showinfo(title='提示', message='请选择用户!')
+            else:
+                user_dict[user_ui.var_usernames.get()][0] = user_ui.var_acronyms.get()
+                user_dict[user_ui.var_usernames.get()][1] =  user_ui.var_ReauthenticationTimes.get()
+                user_dict[user_ui.var_usernames.get()][2] = user_ui.var_posts.get()
+                user_dict[user_ui.var_usernames.get()][3] = sex
+                user_dict[user_ui.var_usernames.get()][4] = float(user_ui.var_charges.get())/60
+                fileobj = open(user_file, 'w',encoding="gbk")
+                fileobj.write(str(user_dict))
+                fileobj.close()
+                tk.messagebox.showinfo(title='提示', message='修改成功!')
+                user_ui.clear_data()
+                userUI()
+        except Exception as e:
+            tk.messagebox.showinfo(title='错误', message='修改失败!')
+            logging.error('修改用户:' + repr(e))
 
     #删除用户
     def removeUser():
-        user_dict.pop(user_ui.var_usernames.get())
-        fileobj = open(user_file, 'w')
-        fileobj.write(str(user_dict))
-        fileobj.close()
-        bills_ui.users.remove(str(user_ui.var_usernames.get()))
-        bills_ui.bills_ui(bills_page)
-        user_ui.clear_data()
-        lbUserss.delete(0, 'end')
-        for i in user_dict :
-            lbUserss.insert('end',i)
-        userUI()
-        tk.messagebox.showinfo(title='提示',message='删除成功!')
+        try:
+            if user_ui.var_usernames.get() !='':
+                user_dict.pop(user_ui.var_usernames.get())
+                fileobj = open(user_file, 'w')
+                fileobj.write(str(user_dict))
+                fileobj.close()
+                bills_ui.users.remove(str(user_ui.var_usernames.get()))
+                bills_ui.bills_ui(bills_page)
+                user_ui.clear_data()
+                lbUserss.delete(0, 'end')
+                for i in user_dict :
+                    lbUserss.insert('end',i)
+                userUI()
+                tk.messagebox.showinfo(title='提示',message='删除成功!')
+            else:
+                tk.messagebox.showinfo(title='提示',message='请选择用户!')
+        except Exception as e:
+            tk.messagebox.showinfo(title='提示',message='删除失败')
+            logging.error('删除用户:' + repr(e))
+
 
     #显示用户信息
     def show_user(event):
         raise_frame(rests_page)
         callUpdateUser()
 
-
     # 添加Stage
     def addstageDate():
         tree = stage.read_xml(Stage_file)
         nodes = stage.find_nodes(tree, ".//")
         result_nodes = stage.get_node_by_keyvalue(nodes, {"id": 'Stage'+str(stage_ui.var_stageID.get())})
-
         if stage_ui.var_stageID.get() == '':
             tk.messagebox.showinfo(title='提示', message='请填写编号!')
         elif uti.check(stage_ui.var_stageID.get()) != True:
@@ -256,31 +273,39 @@ def indexUI(user_file,stage_file):
             tk.messagebox.showinfo(title='提示',message='该Stage已存在!')
         else:
             try:
-                dom = xml.dom.minidom.parse(Stage_file)
-                start_month = '0' + stage_ui.var_stageStartDate_m.get() if len(str(stage_ui.var_stageStartDate_m.get()))==1 else stage_ui.var_stageStartDate_m.get()
-                end_month = '0' + stage_ui.var_stage_endDate_m.get() if len(str(stage_ui.var_stage_endDate_m.get())) == 1 else stage_ui.var_stage_endDate_m.get()
-                flagDao = stage.FlagDao(Stage_file)
-                flagDao.addTag(stage_ui.var_stageName.get(),str(stage_ui.var_stageStartDate_y.get())+'/'+
-                                          start_month+'-'+
-                                          str(stage_ui.var_stage_endDate_y.get())+'/'+
-                                           end_month,
-                                         'Stage' + str(stage_ui.var_stageID.get())
-                               )
-                show_stage_data()
-                tk.messagebox.showinfo(title='提示',message='添加成功!')
-                wipe_data()#清空数据
+                try:
+                    dom = xml.dom.minidom.parse(Stage_file)
+                    start_month = '0' + stage_ui.var_stageStartDate_m.get() if len(str(stage_ui.var_stageStartDate_m.get()))==1 else stage_ui.var_stageStartDate_m.get()
+                    end_month = '0' + stage_ui.var_stage_endDate_m.get() if len(str(stage_ui.var_stage_endDate_m.get())) == 1 else stage_ui.var_stage_endDate_m.get()
+                    flagDao = stage.FlagDao(Stage_file)
+                    flagDao.addTag(stage_ui.var_stageName.get(),str(stage_ui.var_stageStartDate_y.get())+'/'+
+                                              start_month+'-'+
+                                              str(stage_ui.var_stage_endDate_y.get())+'/'+
+                                               end_month,
+                                             'Stage' + str(stage_ui.var_stageID.get())
+                                   )
+                    show_stage_data()
+                    tk.messagebox.showinfo(title='提示',message='添加成功!')
+                    wipe_data()#清空数据
+                except Exception as e:
+                    tk.messagebox.showinfo(title='提示',message='添加失败')
+                    logging.error('添加stage' + repr(e))
             except xml.parsers.expat.ExpatError as e:
+                try:
                     stage_obj=stage.Stage(stage_ui.var_stageID.get(),
-                                          stage_ui.var_stageName.get(),
-                                          stage_ui.var_stageStartDate_y.get(),
-                                          '0' + stage_ui.var_stageStartDate_m.get() if len(str(stage_ui.var_stageStartDate_m.get()))==1 else stage_ui.var_stageStartDate_m.get(),
-                                          stage_ui.var_stage_endDate_y.get(),
-                                        '0' + stage_ui.var_stage_endDate_m.get() if len(str(stage_ui.var_stage_endDate_m.get())) == 1 else stage_ui.var_stage_endDate_m.get()
-                                          )
+                                              stage_ui.var_stageName.get(),
+                                              stage_ui.var_stageStartDate_y.get(),
+                                              '0' + stage_ui.var_stageStartDate_m.get() if len(str(stage_ui.var_stageStartDate_m.get()))==1 else stage_ui.var_stageStartDate_m.get(),
+                                              stage_ui.var_stage_endDate_y.get(),
+                                            '0' + stage_ui.var_stage_endDate_m.get() if len(str(stage_ui.var_stage_endDate_m.get())) == 1 else stage_ui.var_stage_endDate_m.get()
+                                              )
                     stage_obj.save(Stage_file)
-                    # tree_stage.insert("", num,text='Stage'+stage_ui.var_stageID.get())
+                    show_stage_data()
                     tk.messagebox.showinfo(title='提示', message='添加成功!')
                     wipe_data()  # 清空数据
+                except Exception as e:
+                    tk.messagebox.showinfo(title='提示',message='添加失败')
+                    logging.error('添加stage' + repr(e))
 
     def wipe_data():
         stage_ui.var_stageID.set('')
@@ -313,22 +338,26 @@ def indexUI(user_file,stage_file):
                 stage_ui.var_stage_endDate_m.get()) == 1 else stage_ui.var_stage_endDate_m.get())):
             tk.messagebox.showinfo(title='提示', message='开始时间不能大于结束时间!')
         else:
-            flagDao = stage.FlagDao(Stage_file)
-            flagDao.deleteTagByName('Stage'+str(stage_ui.var_stageID.get()))
-            dom = xml.dom.minidom.parse(Stage_file)
-            start_month = '0' + stage_ui.var_stageStartDate_m.get() if len(
-                str(stage_ui.var_stageStartDate_m.get())) == 1 else stage_ui.var_stageStartDate_m.get()
-            end_month = '0' + stage_ui.var_stage_endDate_m.get() if len(
-                str(stage_ui.var_stage_endDate_m.get())) == 1 else stage_ui.var_stage_endDate_m.get()
-            flagDao = stage.FlagDao(Stage_file)
-            flagDao.addTag(stage_ui.var_stageName.get(), str(stage_ui.var_stageStartDate_y.get()) + '/' +
-                           start_month + '-' +
-                           str(stage_ui.var_stage_endDate_y.get()) + '/' +
-                           end_month,
-                           'Stage' + str(stage_ui.var_stageID.get())
-                           )
-            tk.messagebox.showinfo(title='提示', message='修改成功!')
-            wipe_data()  # 清空数据
+            try:
+                flagDao = stage.FlagDao(Stage_file)
+                flagDao.deleteTagByName('Stage'+str(stage_ui.var_stageID.get()))
+                dom = xml.dom.minidom.parse(Stage_file)
+                start_month = '0' + stage_ui.var_stageStartDate_m.get() if len(
+                    str(stage_ui.var_stageStartDate_m.get())) == 1 else stage_ui.var_stageStartDate_m.get()
+                end_month = '0' + stage_ui.var_stage_endDate_m.get() if len(
+                    str(stage_ui.var_stage_endDate_m.get())) == 1 else stage_ui.var_stage_endDate_m.get()
+                flagDao = stage.FlagDao(Stage_file)
+                flagDao.addTag(stage_ui.var_stageName.get(), str(stage_ui.var_stageStartDate_y.get()) + '/' +
+                               start_month + '-' +
+                               str(stage_ui.var_stage_endDate_y.get()) + '/' +
+                               end_month,
+                               'Stage' + str(stage_ui.var_stageID.get())
+                               )
+                tk.messagebox.showinfo(title='提示', message='修改成功!')
+                wipe_data()  # 清空数据
+            except Exception as e:
+                tk.messagebox.showinfo(title='提示',message='修改失败!')
+                logging.error('修改stage' + repr(e))
 
     # 显示单据
     def show_bills():
@@ -395,13 +424,17 @@ def indexUI(user_file,stage_file):
 
     # 删除Stage
     def removeStageDate():
-        flagDao = stage.FlagDao(Stage_file)
-        flagDao.deleteTagByName('Stage'+str(stage_ui.var_stageID.get()))
-        items = tree_stage.get_children()
-        [tree_stage.delete(item) for item in items]
-        show_stage_data()
-        tk.messagebox.showinfo(title='提示',message='删除成功!')
-        wipe_data()
+        try:
+            flagDao = stage.FlagDao(Stage_file)
+            flagDao.deleteTagByName('Stage'+str(stage_ui.var_stageID.get()))
+            items = tree_stage.get_children()
+            [tree_stage.delete(item) for item in items]
+            show_stage_data()
+            tk.messagebox.showinfo(title='提示',message='删除成功!')
+            wipe_data()
+        except Exception as e:
+            tk.messagebox.showinfo(title= '提示',message='删除失败!')
+            logging.error('删除Stage' + repr(e))
 
     # 添加收据单
     def confirms():
@@ -437,37 +470,44 @@ def indexUI(user_file,stage_file):
             if int(bills_ui.var_jobDate_y.get())<int(ms):
                 tk.messagebox.showinfo(title='提示',message='工作日期不能小于该律师认证日期!')
             else:
-                date_y = bills_ui.var_jobDate_y.get()
-                date_m = '0'+str(bills_ui.var_jobDate_m.get()) if len(bills_ui.var_jobDate_m.get())==1 else bills_ui.var_jobDate_m.get()
-                date_d = '0'+str(bills_ui.var_jobDate_d.get()) if len(bills_ui.var_jobDate_d.get())==1 else bills_ui.var_jobDate_d.get()
-                time = (int(bills_ui.var_serDate_hrs.get())*60)+int(bills_ui.var_serDate_mins.get())
-                money = float(int(time)*float(rates))+int(bills_ui.var_copying.get())+int(bills_ui.var_filing.get())+int(bills_ui.var_serving.get())
-                tree = stage.read_xml(Stage_file)
-                nodes = stage.find_nodes(tree, ".//")
-                result_nodes = stage.get_node_by_keyvalue(nodes, {"id": value})
-                a = stage.create_node("bills", {'serialNumber':str(int(serialNumber)),
-                                                'FeeEarners':bills_ui.var_user.get(),
-                                                'Narrative':bills_ui.var_incident.get(),
-                                                'Date':date_y+'-'+date_m+'-'+date_d,
-                                                'Time':str(time),
-                                                'Other':str(int(bills_ui.var_copying.get())+int(bills_ui.var_filing.get())+int(bills_ui.var_serving.get())),
-                                                'TotalMoney':str(money)
-                                                },
-                                      None)
-                tree_total.insert('', int(serialNumber), values=(str(int(serialNumber)), bills_ui.var_user.get(),
-                                           date_y + '-' + date_m + '-' + date_d,
-                                           str(time), bills_ui.var_incident.get(),
-                                           int(bills_ui.var_copying.get()) + int(bills_ui.var_filing.get()) + int(bills_ui.var_serving.get()),
-                                           str(money)
-                                          )
-                            )
+                try:
+                    date_y = bills_ui.var_jobDate_y.get()
+                    date_m = '0'+str(bills_ui.var_jobDate_m.get()) if len(bills_ui.var_jobDate_m.get())==1 else bills_ui.var_jobDate_m.get()
+                    date_d = '0'+str(bills_ui.var_jobDate_d.get()) if len(bills_ui.var_jobDate_d.get())==1 else bills_ui.var_jobDate_d.get()
+                    time = (int(bills_ui.var_serDate_hrs.get())*60)+int(bills_ui.var_serDate_mins.get())
+                    copying = 0 if bills_ui.var_copying.get() =='' else bills_ui.var_copying.get()
+                    filing = 0 if bills_ui.var_filing.get() == '' else bills_ui.var_filing.get()
+                    serving = 0 if bills_ui.var_serving.get() == '' else bills_ui.var_serving.get()
 
-                # 插入到父节点之下
-                stage.add_child_node(result_nodes, a)
-                #添加xml
-                stage.write_xml(tree, Stage_file)
-                tk.messagebox.showinfo(title='提示',message='添加成功!')
-                cancel_bills()
+                    money = float(int(time)*float(rates))+int(copying)+int(filing)+int(serving)
+                    tree = stage.read_xml(Stage_file)
+                    nodes = stage.find_nodes(tree, ".//")
+                    result_nodes = stage.get_node_by_keyvalue(nodes, {"id": value})
+                    a = stage.create_node("bills", {'serialNumber':str(int(serialNumber)),
+                                                    'FeeEarners':bills_ui.var_user.get(),
+                                                    'Narrative':bills_ui.var_incident.get(),
+                                                    'Date':date_y+'-'+date_m+'-'+date_d,
+                                                    'Time':str(time),
+                                                    'Other':str(int(copying)+int(filing)+int(serving)),
+                                                    'TotalMoney':str(money)
+                                                    },
+                                          None)
+                    tree_total.insert('', int(serialNumber), values=(str(int(serialNumber)), bills_ui.var_user.get(),
+                                               date_y + '-' + date_m + '-' + date_d,
+                                               str(time), bills_ui.var_incident.get(),
+                                               int(copying) + int(filing) + int(serving),
+                                               str(money)
+                                              )
+                                )
+                    # 插入到父节点之下
+                    stage.add_child_node(result_nodes, a)
+                    #添加xml
+                    stage.write_xml(tree, Stage_file)
+                    tk.messagebox.showinfo(title='提示',message='添加成功!')
+                    cancel_bills()
+                except Exception as e:
+                    tk.messagebox.showinfo(title='提示',message='添加失败!')
+                    logging.error('添加单据' + repr(e))
 
     # 添加子节点_添加下一层按钮
     def confirm_next():
@@ -476,35 +516,42 @@ def indexUI(user_file,stage_file):
         if value=='' or valueobj=='':
             tk.messagebox.showinfo(title='提示',message='请选择节点再进行添加!')
         else:
-            tree = stage.read_xml(Stage_file)
-            nodes = stage.find_nodes(tree, ".//")
-            result_nodes = stage.get_node_by_keyvalue(nodes, {"id": value})
-            a = stage.create_node("type", {'id':bills_ui.var_bills_type.get()}, None)
-            # 插入到父节点之下
-            stage.add_child_node(result_nodes, a)
-            #添加xml
-            stage.write_xml(tree, Stage_file)
-            show_stage_data()
-            tk.messagebox.showinfo(title='提示',message='添加成功!')
-            bills_ui.var_bills_type.set('')
-            value=''
-            valueobj=''
+            try:
+                tree = stage.read_xml(Stage_file)
+                nodes = stage.find_nodes(tree, ".//")
+                result_nodes = stage.get_node_by_keyvalue(nodes, {"id": value})
+                a = stage.create_node("type", {'id':bills_ui.var_bills_type.get()}, None)
+                # 插入到父节点之下
+                stage.add_child_node(result_nodes, a)
+                #添加xml
+                stage.write_xml(tree, Stage_file)
+                show_stage_data()
+                tk.messagebox.showinfo(title='提示',message='添加成功!')
+                bills_ui.var_bills_type.set('')
+                value=''
+                valueobj=''
+            except Exception as e:
+                tk.messagebox.showinfo(title='提示',message='添加失败!')
+                logging.error('添加子节点' + repr(e))
 
     # 删除单据
     def removeBills():
-        tree = stage.read_xml(Stage_file)
-        del_parent_nodes = stage.find_nodes(tree, ".//")
-        # 准确定位子节点并删除之
-        target_del_node = stage.del_node_by_tagkeyvalue(del_parent_nodes, 'bills', {"serialNumber": bills_ui.var_serialNum.get()})
-        stage.write_xml(tree, Stage_file)
-        tk.messagebox.showinfo(title='提示', message='删除成功!')
-        show_bills()
-        billsUI()
-        bills_ui.var_serialNum==''
+        try:
+            tree = stage.read_xml(Stage_file)
+            del_parent_nodes = stage.find_nodes(tree, ".//")
+            # 准确定位子节点并删除之
+            target_del_node = stage.del_node_by_tagkeyvalue(del_parent_nodes, 'bills', {"serialNumber": bills_ui.var_serialNum.get()})
+            stage.write_xml(tree, Stage_file)
+            tk.messagebox.showinfo(title='提示', message='删除成功!')
+            show_bills()
+            billsUI()
+            bills_ui.var_serialNum==''
+        except Exception as e:
+            tk.messagebox.showinfo(title='提示',message='删除失败!')
+            logging.error('删除单据:' + repr(e))
 
     # 修改单据
     def updateBills():
-
         if bills_ui.var_user.get() == '':
             tk.messagebox.showinfo(title='提示', message='请选择律师!')
         elif bills_ui.var_incident.get() == '':
@@ -528,36 +575,42 @@ def indexUI(user_file,stage_file):
         elif uti.check(bills_ui.var_serving.get()) == False:
             tk.messagebox.showinfo(title='提示', message='Serving只能填写数字,请重新填写!')
         else:
-            rates = user_dict[bills_ui.var_user.get()][4]
-            ms = user_dict[bills_ui.var_user.get()][1]
-            if int(bills_ui.var_jobDate_y.get()) < int(ms):
-                tk.messagebox.showinfo(title='提示', message='工作日期不能小于该律师认证日期!')
-            else:
-                date_y = bills_ui.var_jobDate_y.get()
-                date_m = '0' + str(bills_ui.var_jobDate_m.get()) if len(
-                    bills_ui.var_jobDate_m.get()) == 1 else bills_ui.var_jobDate_m.get()
-                date_d = '0' + str(bills_ui.var_jobDate_d.get()) if len(
-                    bills_ui.var_jobDate_d.get()) == 1 else bills_ui.var_jobDate_d.get()
-                time = (int(bills_ui.var_serDate_hrs.get()) * 60) + int(bills_ui.var_serDate_mins.get())
-                money = float(int(time) * float(rates)) + int(bills_ui.var_copying.get()) + int(
-                    bills_ui.var_filing.get()) + int(bills_ui.var_serving.get())
+            try:
+                rates = user_dict[bills_ui.var_user.get()][4]
+                ms = user_dict[bills_ui.var_user.get()][1]
+                if int(bills_ui.var_jobDate_y.get()) < int(ms):
+                    tk.messagebox.showinfo(title='提示', message='工作日期不能小于该律师认证日期!')
+                else:
+                    date_y = bills_ui.var_jobDate_y.get()
+                    date_m = '0' + str(bills_ui.var_jobDate_m.get()) if len(
+                        bills_ui.var_jobDate_m.get()) == 1 else bills_ui.var_jobDate_m.get()
+                    date_d = '0' + str(bills_ui.var_jobDate_d.get()) if len(
+                        bills_ui.var_jobDate_d.get()) == 1 else bills_ui.var_jobDate_d.get()
+                    copying = 0 if bills_ui.var_copying.get() == '' else bills_ui.var_copying.get()
+                    filing = 0 if bills_ui.var_filing.get() == '' else bills_ui.var_filing.get()
+                    serving = 0 if bills_ui.var_serving.get() == '' else bills_ui.var_serving.get()
 
-                tree = stage.read_xml(Stage_file)
-                nodes = stage.find_nodes(tree, ".//")
-                result_nodes = stage.get_node_by_keyvalue(nodes, {"serialNumber":bills_ui.var_serialNum.get()})
-                stage.change_node_properties(result_nodes,{"Date":str(date_y)+'-'+str(date_m)+'-'+str(date_d),
-                                                           'FeeEarners':bills_ui.var_user.get(),
-                                                           'Narrative':bills_ui.var_incident.get(),
-                                                           'Other':str(int(bills_ui.var_copying.get())+int(bills_ui.var_filing.get())+int(bills_ui.var_serving.get())),
-                                                           'Time': str(time),
-                                                           'TotalMoney':str(money)
-                                                           }
-                                             )
-                stage.write_xml(tree, Stage_file)
-                tk.messagebox.showinfo(title='提示',message='修改成功!')
-                billsUI()
-                show_bills()
+                    time = (int(bills_ui.var_serDate_hrs.get()) * 60) + int(bills_ui.var_serDate_mins.get())
+                    money = float(int(time) * float(rates)) + int(copying) + int(filing) + int(serving)
 
+                    tree = stage.read_xml(Stage_file)
+                    nodes = stage.find_nodes(tree, ".//")
+                    result_nodes = stage.get_node_by_keyvalue(nodes, {"serialNumber":bills_ui.var_serialNum.get()})
+                    stage.change_node_properties(result_nodes,{"Date":str(date_y)+'-'+str(date_m)+'-'+str(date_d),
+                                                               'FeeEarners':bills_ui.var_user.get(),
+                                                               'Narrative':bills_ui.var_incident.get(),
+                                                               'Other':str(int(copying)+int(filing)+int(serving)),
+                                                               'Time': str(time),
+                                                               'TotalMoney':str(money)
+                                                               }
+                                                 )
+                    stage.write_xml(tree, Stage_file)
+                    tk.messagebox.showinfo(title='提示',message='修改成功!')
+                    billsUI()
+                    show_bills()
+            except Exception as e:
+                tk.messagebox.showinfo(title='提示',message='修改失败!')
+                logging.error('修改单据:' + repr(e))
 
     #双击控制台将单据数据显示控件中
     def trefun_total(event):
@@ -602,36 +655,39 @@ def indexUI(user_file,stage_file):
 
     # 导入用户文件
     def input_user():
-        global User_file
-        global user_dict
-        filename = tk.filedialog.askopenfilename()
-        if filename !='':
-            User_file=filename
-            lbUserss.delete(0, 'end')
-            bills_ui.users.clear()
-            user_obj = open(filename, 'r')
-            user_data = user_obj.readlines()
-            for dic in user_data:
-                user_dict = eval(dic)
-                for i in user_dict.keys():
-                    lbUserss.insert('end', i)
-                    bills_ui.users.append(i)
-                    bills_ui.bills_ui(bills_page)
-            tk.messagebox.showinfo(title='提示',message='导入成功')
+        try:
+            global User_file
+            global user_dict
+            filename = tk.filedialog.askopenfilename()
+            if filename !='':
+                User_file=filename
+                lbUserss.delete(0, 'end')
+                bills_ui.users.clear()
+                user_obj = open(filename, 'r')
+                user_data = user_obj.readlines()
+                for dic in user_data:
+                    user_dict = eval(dic)
+                    for i in user_dict.keys():
+                        lbUserss.insert('end', i)
+                        bills_ui.users.append(i)
+                        bills_ui.bills_ui(bills_page)
+                tk.messagebox.showinfo(title='提示',message='导入成功')
+        except Exception as e :
+            tk.messagebox.showinfo(title='提示',message='导入失败!')
+            logging.error('导入用户文件:' + repr(e))
 
 
     # 导入单据文件
     def input_receipts():
-        global Stage_file
-        filename = tk.filedialog.askopenfilename()
-        if filename != '':
-            Stage_file = filename
-            print(Stage_file)
-            show_stage_data()
-
-    # 导出docx
-    def docxui():
-        pass
+        try:
+            global Stage_file
+            filename = tk.filedialog.askopenfilename()
+            if filename != '':
+                Stage_file = filename
+                show_stage_data()
+        except Exception as e :
+            tk.messagebox.showinfo(title='提示',message='导入失败')
+            logging.error('导入单据文件:' + repr(e))
 
     # 导出PDF
     def pdfui():
@@ -639,11 +695,11 @@ def indexUI(user_file,stage_file):
 
     # 显示全部数据
     def overall_data():
-        sys.exit()
+        pass
 
     # 退出
     def exita():
-        pass
+        sys.exit()
 
     def choice (event):
         global value
@@ -668,19 +724,22 @@ def indexUI(user_file,stage_file):
 
     #查看节点的数据
     def trefun(event):
-        data = stage.show_data(Stage_file)
-        values = event.widget.selection()
-        for idx in values:
-           if str(tree_stage.item(idx)["text"][:5]) != 'Stage':
-               pass
-           else:
-                stageUI()
-                stage_ui.var_stageID.set(tree_stage.item(idx)["text"][5:])
-                stage_ui.var_stageName.set(data[tree_stage.item(idx)["text"]][2])
-                stage_ui.var_stageStartDate_y.set(data[tree_stage.item(idx)["text"]][0][:4])
-                stage_ui.var_stageStartDate_m.set(data[tree_stage.item(idx)["text"]][0][5:7])
-                stage_ui.var_stage_endDate_y.set(data[tree_stage.item(idx)["text"]][0][8:12])
-                stage_ui.var_stage_endDate_m.set(data[tree_stage.item(idx)["text"]][0][13:])
+        try:
+            data = stage.show_data(Stage_file)
+            values = event.widget.selection()
+            for idx in values:
+               if str(tree_stage.item(idx)["text"][:5]) != 'Stage':
+                   pass
+               else:
+                    stageUI()
+                    stage_ui.var_stageID.set(tree_stage.item(idx)["text"][5:])
+                    stage_ui.var_stageName.set(data[tree_stage.item(idx)["text"]][2])
+                    stage_ui.var_stageStartDate_y.set(data[tree_stage.item(idx)["text"]][0][:4])
+                    stage_ui.var_stageStartDate_m.set(data[tree_stage.item(idx)["text"]][0][5:7])
+                    stage_ui.var_stage_endDate_y.set(data[tree_stage.item(idx)["text"]][0][8:12])
+                    stage_ui.var_stage_endDate_m.set(data[tree_stage.item(idx)["text"]][0][13:])
+        except Exception as e:
+            logging.error('查看节点的数据:' + repr(e))
 
     #删除子节点
     def delete_node():
@@ -690,15 +749,19 @@ def indexUI(user_file,stage_file):
         elif value[0:5]=='Stage':
             tk.messagebox.showinfo(title='提示',message='该节点为根节点,请双击该节点在页面进行删除!')
         else:
-            tree = stage.read_xml(Stage_file)
-            del_parent_nodes = stage.find_nodes(tree, ".//")
-            # 准确定位子节点并删除之
-            target_del_node = stage.del_node_by_tagkeyvalue(del_parent_nodes,'type' ,{"id": value})
-            stage.write_xml(tree, Stage_file)
-            tk.messagebox.showinfo(title='提示',message='删除成功!')
-            show_stage_data()
-            value = ''
-            valueobj = ''
+            try:
+                tree = stage.read_xml(Stage_file)
+                del_parent_nodes = stage.find_nodes(tree, ".//")
+                # 准确定位子节点并删除之
+                target_del_node = stage.del_node_by_tagkeyvalue(del_parent_nodes,'type' ,{"id": value})
+                stage.write_xml(tree, Stage_file)
+                tk.messagebox.showinfo(title='提示',message='删除成功!')
+                show_stage_data()
+                value = ''
+                valueobj = ''
+            except Exception as e:
+                tk.messagebox.showinfo(title='提示',message='删除失败!')
+                logging.error('删除子节点:' + repr(e))
 
     #修改子节点弹出修改窗口
     def update_node():
@@ -709,26 +772,30 @@ def indexUI(user_file,stage_file):
         else:
             # 确定_修改子节点
             def confirm_add_node():
-                # 1. 读取xml文件
-                global value
-                father_node=uti.getIdName(Stage_file,value)
-                tree = stage.read_xml(Stage_file)
-                nodes = stage.find_nodes(tree,".//")
-                result_nodes = stage.get_node_by_keyvalue(nodes, {"id": value})
-                stage.change_node_properties(result_nodes, {"id":var_update_node.get()})
-                stage.write_xml(tree, Stage_file)
-                tk.messagebox.showinfo(title='提示',message='修改成功!')
-                var_update_node.set('')
-                root.destroy()
-                show_stage_data()
-                value=''
-                valueobj=''
+                try:
+                    global value
+                    father_node=uti.getIdName(Stage_file,value)
+                    tree = stage.read_xml(Stage_file)
+                    nodes = stage.find_nodes(tree,".//")
+                    result_nodes = stage.get_node_by_keyvalue(nodes, {"id": value})
+                    stage.change_node_properties(result_nodes, {"id":var_update_node.get()})
+                    stage.write_xml(tree, Stage_file)
+                    tk.messagebox.showinfo(title='提示',message='修改成功!')
+                    var_update_node.set('')
+                    root.destroy()
+                    show_stage_data()
+                    value=''
+                    valueobj=''
+                except Exception as e:
+                    tk.messagebox.showinfo(title='提示',message='修改失败!')
+                    logging.error('修改子节点:' + repr(e))
 
             # 取消_修改子节点
             def cancel_add_node():
                 root.destroy()
                 value=''
                 valueobj=''
+
             root = tk.Toplevel(window)
             root.geometry('270x100')
             update_la = tk.Label(root, text='Type:').place(x=20, y=20)
@@ -744,16 +811,19 @@ def indexUI(user_file,stage_file):
     # 导出PDF_标题编号输入框
     var_pdftitle = tk.StringVar()
     var_pdfid = tk.StringVar()
-
     def pdfWindow():
         def confirmpdf():
             if var_pdftitle.get() != '' and var_pdfid.get() != '':
-                uti.exportPDF(var_pdftitle.get(),var_pdfid.get(),user_dict,Stage_file)
-                uti.export(var_pdftitle.get(),var_pdfid.get(),user_dict,Stage_file)
-                var_pdftitle.set('')
-                var_pdfid.set('')
-                PDFwindow.destroy()
-                tk.messagebox.showinfo(title='提示',message='导出成功')
+                try:
+                    uti.exportPDF(var_pdftitle.get(),var_pdfid.get(),user_dict,Stage_file)
+                    uti.export(var_pdftitle.get(),var_pdfid.get(),user_dict,Stage_file)
+                    var_pdftitle.set('')
+                    var_pdfid.set('')
+                    PDFwindow.destroy()
+                    tk.messagebox.showinfo(title='提示',message='导出成功')
+                except Exception as e :
+                    tk.messagebox.showinfo(title='提示',message='导出失败')
+                    logging.error('导出PDF:' + repr(e))
             else:
                 tk.messagebox.showinfo(title='提示', message='请填写内容')
         def cancelpdf():
@@ -895,7 +965,6 @@ def indexUI(user_file,stage_file):
     men.add_cascade(label='功能', menu=usermenu)
     usermenu.add_command(label='导入用户数据', command=input_user)
     usermenu.add_command(label='导入单据数据', command=input_receipts)
-    usermenu.add_command(label='导出DOCX', command=docxui)
     usermenu.add_command(label='导出PDF', command=pdfui)
     usermenu.add_command(label='显示全部数据', command=overall_data)
     exitemenu = tk.Menu(men, tearoff=0)
@@ -948,8 +1017,8 @@ def indexUI(user_file,stage_file):
                 uti.callBack(6, tree_total)
             else:
                 pass
-        except Exception:
-            pass
+        except Exception as e:
+            logging.error('排序_升序:' + repr(e))
 
     # 排序_降序
     def callback_order(event):
@@ -968,8 +1037,8 @@ def indexUI(user_file,stage_file):
                 uti.callBack_order(6, tree_total)
             else:
                 pass
-        except Exception:
-            pass
+        except Exception as e:
+            logging.error('排序_降序:' + repr(e))
 
     tree_total.bind("<Button-1>", call_back)
     tree_total.bind("<Double-Button-1>", callback_order)
