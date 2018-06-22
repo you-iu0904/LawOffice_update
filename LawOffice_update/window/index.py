@@ -4,6 +4,7 @@ import tkinter as tk
 from tkinter import ttk
 import tkinter.messagebox
 import pickle
+from xml.dom import minidom
 import logging
 import datetime
 import tkinter.filedialog
@@ -86,48 +87,52 @@ def indexUI(user_file,stage_file):
             lbUserss.insert('end',i)
             bills_ui.users.append(i)
             bills_ui.bills_ui(bills_page)
-
-    #页面加载完成时读取xml数据
-    treexml = et.parse(Stage_file)
-    root = treexml.getroot()
     d_dict = {}
     node = []
-    for child in root:
-        data = child.attrib['id']
-        node.append(data)
-        data_list = []
-        for i in child:
-            try:
-                data1 = i.attrib['id']
-                data_list.append(data1)
-                d_dict[data] = data_list
-            except KeyError:
-                pass
-            data1_list = []
-            for s in i:
+    try:
+        #页面加载完成时读取xml数据
+        treexml = et.parse(Stage_file)
+        root = treexml.getroot()
+        for child in root:
+            data = child.attrib['id']
+            node.append(data)
+            data_list = []
+            for i in child:
                 try:
-                    data2 = s.attrib['id']
-                    data1_list.append(data2)
-                    d_dict[data1] = data1_list
+                    data1 = i.attrib['id']
+                    data_list.append(data1)
+                    d_dict[data] = data_list
                 except KeyError:
                     pass
-            data2_list=[]
-            for k in s:
-                try:
-                    data3 = k.attrib['id']
-                    data2_list.append(data3)
-                    d_dict[data2] = data2_list
-                except KeyError:
-                    pass
-    d_dict['Data'] = node
-
+                data1_list = []
+                for s in i:
+                    try:
+                        data2 = s.attrib['id']
+                        data1_list.append(data2)
+                        d_dict[data1] = data1_list
+                    except KeyError:
+                        pass
+                    data2_list = []
+                    for k in s:
+                        try:
+                            data3 = k.attrib['id']
+                            data2_list.append(data3)
+                            d_dict[data2] = data2_list
+                        except KeyError:
+                            pass
+        d_dict['Data'] = node
+    except xml.etree.ElementTree.ParseError :
+        xm = minidom.Document()
+        root = xm.createElement('data')
+        xm.appendChild(root)
+        f = open(stage_file, 'w')
+        f.write(xm.toprettyxml())
+        f.close()
     container_tree = tk.Frame(window, width=170, height=180)
     container_tree.propagate(False)
 
     tree_stage = ttk.Treeview(container_tree, show="tree", selectmode='browse')
     myTest = uti.TreeListBox(window, 'Data', d_dict, Stage_file, tree_stage, container_tree)
-
-
     #页面加载时将单据的数据添tree_total列表中
     try:
         dom = xml.dom.minidom.parse(Stage_file)
@@ -408,15 +413,14 @@ def indexUI(user_file,stage_file):
                         d_dict[data1] = data1_list
                     except KeyError:
                         pass
-                data2_list = []
-                for k in s:
-                    try:
-                        data3 = k.attrib['id']
-                        data2_list.append(data3)
-                        d_dict[data2] = data2_list
-                    except KeyError:
-                        pass
-        d_dict['Data'] = node
+                    data2_list = []
+                    for k in s:
+                        try:
+                            data3 = k.attrib['id']
+                            data2_list.append(data3)
+                            d_dict[data2] = data2_list
+                        except KeyError:
+                            pass
         d_dict['Data'] = node
         items = tree_stage.get_children()
         [tree_stage.delete(item) for item in items]
@@ -516,7 +520,7 @@ def indexUI(user_file,stage_file):
         if value=='' or valueobj=='':
             tk.messagebox.showinfo(title='提示',message='请选择节点再进行添加!')
         else:
-            try:
+            # try:
                 tree = stage.read_xml(Stage_file)
                 nodes = stage.find_nodes(tree, ".//")
                 result_nodes = stage.get_node_by_keyvalue(nodes, {"id": value})
@@ -530,9 +534,9 @@ def indexUI(user_file,stage_file):
                 bills_ui.var_bills_type.set('')
                 value=''
                 valueobj=''
-            except Exception as e:
-                tk.messagebox.showinfo(title='提示',message='添加失败!')
-                logging.error('添加子节点' + repr(e))
+            # except Exception as e:
+            #     tk.messagebox.showinfo(title='提示',message='添加失败!')
+            #     logging.error('添加子节点' + repr(e))
 
     # 删除单据
     def removeBills():
