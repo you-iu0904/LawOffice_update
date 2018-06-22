@@ -164,7 +164,6 @@ def indexUI(user_file,stage_file):
                 tk.messagebox.showinfo(title='提示',message='认证时间错误,请重新输入!')
             elif uti.check(user_ui.var_charge.get())!=True:
                 tk.messagebox.showinfo(title='提示',message='收费标准错误,请重新输入!')
-            # elif user_dict[user_ui.var_username.get()]
             else:
                 try:
                     ss=attorney.Attorney(
@@ -196,12 +195,11 @@ def indexUI(user_file,stage_file):
     #修改用户
     def updateUser():
         try:
+            time= 0 if user_ui.var_ReauthenticationTimes.get()=='' else user_ui.var_ReauthenticationTimes.get()
             sex='男' if int(user_ui.var_sexs.get()) == 1 else '女'
             if  (user_ui.var_acronyms.get()=='')  | (sex=='') |(user_ui.var_charges.get()==''):
                 tk.messagebox.showinfo(title='提示',message='请填写相关数据，再进行添加!')
-            elif  len(user_ui.var_ReauthenticationTimes.get())<4:
-                tk.messagebox.showinfo(title='提示',message='请输入正确的认证时间!')
-            elif uti.check(user_ui.var_ReauthenticationTimes.get())!=True:
+            elif uti.check(str(time))!=True:
                 tk.messagebox.showinfo(title='提示',message='认证时间错误,请重新输入!')
             elif user_ui.var_usernames.get()=='':
                 tk.messagebox.showinfo(title='提示', message='请选择用户!')
