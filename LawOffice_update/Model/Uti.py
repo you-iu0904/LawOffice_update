@@ -221,7 +221,7 @@ def exportPDF(title,id,user_dict,stage_file):
         story.append(component_table12)
         bissdata1.clear()
         bissdata1.append('')
-    doc = SimpleDocTemplate('导出数据1.pdf')
+    doc = SimpleDocTemplate(title+'1.pdf')
     doc.build(story)
 
 def export(title,id,user_dict,stage_file):
@@ -472,7 +472,7 @@ def export(title,id,user_dict,stage_file):
     for filename in s:
         merger.append(PyPDF2.PdfFileReader(os.getcwd() + '/PDF' + '/' + filename))
         os.remove(os.getcwd() + '/PDF' + '/' + filename)
-    merger.write('导出数据2.pdf')
+    merger.write(title+'2.pdf')
 
 
 
@@ -508,3 +508,4 @@ def getIdName(stage_file,value):
     xml = etree.fromstring(content)
     s = xml.findall('.//type[@id='+'"'+value+'"'+']...')
     return s[0].attrib['id']
+# getIdName('asd.xml',)
