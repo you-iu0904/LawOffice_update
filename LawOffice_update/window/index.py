@@ -9,20 +9,18 @@ import logging
 import datetime
 import tkinter.filedialog
 import re
-import docx
 import os
-from win32com import client
-from docx.shared import Cm
+import PyPDF2
+# from win32com import client
+# from docx.shared import Cm
 import operator
 import string
-import PyPDF2
 import os
 import Model.Uti as uti
 import window.UserUI as user_ui #用户页面
 import window.StageUI as stage_ui #Stage页面
 import window.BillsUI as bills_ui #单据页面
 from reportlab.pdfgen.canvas import Canvas
-from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.lib.styles import getSampleStyleSheet
 from reportlab.lib import colors
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer,Image,Table,TableStyle
@@ -34,8 +32,7 @@ import  xml.dom.minidom
 from lxml import etree
 import Model.Attorney as attorney
 import Model.Stage as stage
-pdfmetrics.registerFont(UnicodeCIDFont('STSong-Light'))
-pdfmetrics.registerFont(TTFont('msyh', 'STSONG.TTF'))
+
 
 
 User_file=''
@@ -822,9 +819,11 @@ def indexUI(user_file,stage_file):
                     var_pdftitle.set('')
                     var_pdfid.set('')
                     PDFwindow.destroy()
-                    tk.messagebox.showinfo(title='提示',message='导出成功')
-                except Exception as e :
-                    tk.messagebox.showinfo(title='提示',message='导出失败')
+                    tk.messagebox.showinfo(title='提示',message='导出成功!')
+                except PermissionError as e :
+                    tk.messagebox.showinfo(title='提示',message='文件已存在，请关闭文件再导出')
+                except Exception as e:
+                    tk.messagebox.showinfo(title='提示',message='导出失败!')
                     logging.error('导出PDF:' + repr(e))
             else:
                 tk.messagebox.showinfo(title='提示', message='请填写内容')

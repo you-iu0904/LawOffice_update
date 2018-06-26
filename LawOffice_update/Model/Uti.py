@@ -13,8 +13,6 @@ import os
 import PyPDF2
 import operator
 from operator import itemgetter
-
-pdfmetrics.registerFont(TTFont('msyh', 'STSONG.TTF'))
 import Model.Stage as stage
 import window.StageUI as stage_ui
 
@@ -129,6 +127,7 @@ class TreeListBox:
 
 #导出PDF
 def exportPDF(title,id,user_dict,stage_file):
+
     story = []
     styles = getSampleStyleSheet()
     #导出标题和编号
@@ -146,7 +145,6 @@ def exportPDF(title,id,user_dict,stage_file):
     component_table = Table(com, colWidths=[140, 140, 140, 140, 140])
     component_table.setStyle(TableStyle([
         ('FONTSIZE', (0, 0), (-1, -1), 12),
-        ('FONTNAME', (0, 0), (-1, -1), 'msyh'),
         ('GRID', (0, 2), (4, 0), 0.5, colors.black)
     ]))
     story.append(component_table)
@@ -248,7 +246,6 @@ def export(title,id,user_dict,stage_file):
     component_table = Table(com, colWidths=[140, 140, 140, 140, 140])
     component_table.setStyle(TableStyle([
         ('FONTSIZE', (0, 0), (-1, -1), 12),
-        ('FONTNAME', (0, 0), (-1, -1), 'msyh'),
         ('GRID', (0, 2), (4, 0), 0.5, colors.black)
     ]))
     story.append(component_table)
@@ -397,7 +394,6 @@ def export(title,id,user_dict,stage_file):
         component_table_bills = Table(bissdata, colWidths=[70, 70, 40, 290, 90])
         component_table_bills.setStyle(TableStyle([
             ('FONTSIZE', (0, 0), (-1, -1), 12),
-            ('FONTNAME', (0, 0), (-1, -1), 'msyh'),
             ('GRID', (0, 2), (4, 0), 0.5, colors.black)
         ]))
 
@@ -406,13 +402,11 @@ def export(title,id,user_dict,stage_file):
         component_tablel2 = Table(money_list, colWidths=[180, 180, 180])
         component_tablel2.setStyle(TableStyle([
             ('FONTSIZE', (0, 0), (-1, -1), 12),
-            ('FONTNAME', (0, 0), (-1, -1), 'msyh'),
             ('GRID', (0, 2), (3, 0), 0.5, colors.black)
         ]))
         component_tablel3 = Table(money_list1, colWidths=[180, 180, 180])
         component_tablel3.setStyle(TableStyle([
             ('FONTSIZE', (0, 0), (-1, -1), 20),
-            ('FONTNAME', (0, 0), (-1, -1), 'msyh'),
             ('FONTSIZE', (0, 0), (-1, -1), 12),  # 字体大小
         ]))
         story.append(component_tablel3)
@@ -454,7 +448,6 @@ def export(title,id,user_dict,stage_file):
     component_tablel5 = Table(tota2, colWidths=[180, 180, 180])
     component_tablel3.setStyle(TableStyle([
         ('FONTSIZE', (0, 0), (-1, -1), 12),
-        ('FONTNAME', (0, 0), (-1, -1), 'msyh'),
         ('GRID', (0, 2), (2, 0), 0.5, colors.black)
     ]))
     story1.append(component_tablel4)
