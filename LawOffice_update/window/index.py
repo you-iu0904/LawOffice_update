@@ -32,13 +32,9 @@ import  xml.dom.minidom
 from lxml import etree
 import Model.Attorney as attorney
 import Model.Stage as stage
-
-
-
 User_file=''
 Stage_file=''
 serialNumber = 0
-
 value = ''
 valueobj = ''
 
@@ -515,23 +511,29 @@ def indexUI(user_file,stage_file):
         if value=='' or valueobj=='':
             tk.messagebox.showinfo(title='提示',message='请选择节点再进行添加!')
         else:
-            # try:
-                tree = stage.read_xml(Stage_file)
-                nodes = stage.find_nodes(tree, ".//")
-                result_nodes = stage.get_node_by_keyvalue(nodes, {"id": value})
-                a = stage.create_node("type", {'id':bills_ui.var_bills_type.get()}, None)
-                # 插入到父节点之下
-                stage.add_child_node(result_nodes, a)
-                #添加xml
-                stage.write_xml(tree, Stage_file)
-                show_stage_data()
-                tk.messagebox.showinfo(title='提示',message='添加成功!')
-                bills_ui.var_bills_type.set('')
-                value=''
-                valueobj=''
-            # except Exception as e:
-            #     tk.messagebox.showinfo(title='提示',message='添加失败!')
-            #     logging.error('添加子节点' + repr(e))
+            if str(value)=='Data' :
+                tk.messagebox.showinfo(title='提示', message='该节点为根节点，请选择该节点下的节点!')
+            else:
+                if bills_ui.var_incident.get() != '' and bills_ui.var_jobDate_y.get() == '' and bills_ui.var_jobDate_m.get() == '' and bills_ui.var_jobDate_d.get() == '':
+                    try:
+                        tree = stage.read_xml(Stage_file)
+                        nodes = stage.find_nodes(tree, ".//")
+                        result_nodes = stage.get_node_by_keyvalue(nodes, {"id": value})
+                        a = stage.create_node("type", {'id':bills_ui.var_incident.get()}, None)
+                        # 插入到父节点之下
+                        stage.add_child_node(result_nodes, a)
+                        #添加xml
+                        stage.write_xml(tree, Stage_file)
+                        show_stage_data()
+                        tk.messagebox.showinfo(title='提示',message='添加成功!')
+                        bills_ui.var_incident.set('')
+                        value=''
+                        valueobj=''
+                    except Exception as e:
+                        tk.messagebox.showinfo(title='提示',message='添加失败!')
+                        logging.error('添加子节点' + repr(e))
+                elif bills_ui.var_incident.get() =='':
+                    tk.messagebox.showinfo(title='提示',message='请填写Narrative，再进行节点的添加!')
 
     # 删除单据
     def removeBills():
@@ -611,6 +613,7 @@ def indexUI(user_file,stage_file):
                 tk.messagebox.showinfo(title='提示',message='修改失败!')
                 logging.error('修改单据:' + repr(e))
 
+
     #双击控制台将单据数据显示控件中
     def trefun_total(event):
         billsUI()
@@ -650,7 +653,6 @@ def indexUI(user_file,stage_file):
         bills_ui.var_copying.set('0')
         bills_ui.var_filing.set('0')
         bills_ui.var_serving.set('0')
-        bills_ui.var_bills_type.set('')
 
     # 导入用户文件
     def input_user():
@@ -727,9 +729,7 @@ def indexUI(user_file,stage_file):
             data = stage.show_data(Stage_file)
             values = event.widget.selection()
             for idx in values:
-               if str(tree_stage.item(idx)["text"][:5]) != 'Stage':
-                   pass
-               else:
+               if str(tree_stage.item(idx)["text"][:5]) == 'Stage':
                     stageUI()
                     stage_ui.var_stageID.set(tree_stage.item(idx)["text"][5:])
                     stage_ui.var_stageName.set(data[tree_stage.item(idx)["text"]][2])
@@ -737,6 +737,11 @@ def indexUI(user_file,stage_file):
                     stage_ui.var_stageStartDate_m.set(data[tree_stage.item(idx)["text"]][0][5:7])
                     stage_ui.var_stage_endDate_y.set(data[tree_stage.item(idx)["text"]][0][8:12])
                     stage_ui.var_stage_endDate_m.set(data[tree_stage.item(idx)["text"]][0][13:])
+               elif str(tree_stage.item(idx)["text"]) != 'Stage' and str(tree_stage.item(idx)["text"]) != 'Data':
+                   billsUI()
+                   bills_ui.var_incident.set(str(tree_stage.item(idx)["text"]))
+               else:
+                   pass
         except Exception as e:
             logging.error('查看节点的数据:' + repr(e))
 
@@ -936,13 +941,13 @@ def indexUI(user_file,stage_file):
 
     #添加单据页面按钮
     confirm = tk.Button(bills_page, text='添加收据', width=8, command=confirms)
-    confirm.place(x=120, y=275)
+    confirm.place(x=120, y=265)
     confirm_next=tk.Button(bills_page,text='添加下一层',width=8,command=confirm_next)
-    confirm_next.place(x=205,y=275)
+    confirm_next.place(x=205,y=265)
     removeBills = tk.Button(bills_page, text='删 除', width=6, command=removeBills)
     updateBills = tk.Button(bills_page, text='修 改', width=6, command=updateBills)
     cancel_i = tk.Button(bills_page, text='清 空', width=6, command=cancel_bills)
-    cancel_i.place(x=290, y=275)
+    cancel_i.place(x=290, y=265)
 
     #用户列表
     lbUserss.place(x=520, y=0)

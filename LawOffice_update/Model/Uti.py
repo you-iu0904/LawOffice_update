@@ -166,7 +166,6 @@ def exportPDF(title,id,user_dict,stage_file):
             data.append('')
             data.append('')
             bissdata1.append(data)
-
             data2_bills = []
 
             for s in i:
@@ -270,7 +269,7 @@ def export(title,id,user_dict,stage_file):
                 data = []
                 data.append(i.attrib['Date'])
                 data.append(i.attrib['FeeEarners'])
-                data.append(i.attrib['Time'])
+                data.append(round(int(i.attrib['Time'])/60,1))
                 data.append(i.attrib['Narrative'])
                 data.append(i.attrib['TotalMoney'])
                 bissdata.append(data)
@@ -282,9 +281,9 @@ def export(title,id,user_dict,stage_file):
                     data = []
                     data.append(s.attrib['Date'])
                     data.append(s.attrib['FeeEarners'])
-                    data.append(s.attrib['Time'])
+                    data.append(round(int(s.attrib['Time'])/60,1))
                     data.append(s.attrib['Narrative'])
-                    data.append(s.attrib['TotalMoney'])
+                    data.append('$'+str(s.attrib['TotalMoney']))
                     bissdata.append(data)
                     stage_total.append(data)
                 except KeyError:
@@ -294,9 +293,9 @@ def export(title,id,user_dict,stage_file):
                         data = []
                         data.append(k.attrib['Date'])
                         data.append(k.attrib['FeeEarners'])
-                        data.append(k.attrib['Time'])
+                        data.append(round(int(k.attrib['Time'])/60,1))
                         data.append(k.attrib['Narrative'])
-                        data.append(k.attrib['TotalMoney'])
+                        data.append('$'+str(k.attrib['TotalMoney']))
                         bissdata.append(data)
                         stage_total.append(data)
                     except KeyError:
@@ -306,9 +305,9 @@ def export(title,id,user_dict,stage_file):
                             data = []
                             data.append(p.attrib['Date'])
                             data.append(p.attrib['FeeEarners'])
-                            data.append(p.attrib['Time'])
+                            data.append(round(int(p.attrib['Time'])/60,1))
                             data.append(p.attrib['Narrative'])
-                            data.append(p.attrib['TotalMoney'])
+                            data.append('$'+str(p.attrib['TotalMoney']))
                             bissdata.append(data)
                             stage_total.append(data)
                         except KeyError:
@@ -318,9 +317,9 @@ def export(title,id,user_dict,stage_file):
                                 data = []
                                 data.append(t.attrib['Date'])
                                 data.append(t.attrib['FeeEarners'])
-                                data.append(t.attrib['Time'])
+                                data.append(round(int(t.attrib['Time'])/60,1))
                                 data.append(t.attrib['Narrative'])
-                                data.append(t.attrib['TotalMoney'])
+                                data.append('$'+str(t.attrib['TotalMoney']))
                                 bissdata.append(data)
                                 stage_total.append(data)
                             except KeyError:
@@ -330,9 +329,9 @@ def export(title,id,user_dict,stage_file):
                                     data = []
                                     data.append(y.attrib['Date'])
                                     data.append(y.attrib['FeeEarners'])
-                                    data.append(y.attrib['Time'])
+                                    data.append(round(int(y.attrib['Time'])/60,1))
                                     data.append(y.attrib['Narrative'])
-                                    data.append(y.attrib['TotalMoney'])
+                                    data.append('$'+str(y.attrib['TotalMoney']))
                                     bissdata.append(data)
                                     stage_total.append(data)
                                 except KeyError:
@@ -342,9 +341,9 @@ def export(title,id,user_dict,stage_file):
                                         data = []
                                         data.append(o.attrib['Date'])
                                         data.append(o.attrib['FeeEarners'])
-                                        data.append(o.attrib['Time'])
+                                        data.append(round(int(o.attrib['Time'])/60,1))
                                         data.append(o.attrib['Narrative'])
-                                        data.append(o.attrib['TotalMoney'])
+                                        data.append('$'+str(o.attrib['TotalMoney']))
                                         bissdata.append(data)
                                         stage_total.append(data)
                                     except KeyError:
@@ -354,7 +353,7 @@ def export(title,id,user_dict,stage_file):
         l = []
         for d in stage_total:
             result_time[d[1]] = round(float(result_time.get(d[1], 0)) + float(d[2]), 2)
-            result_money[d[1]] = round(float(result_money.get(d[1], 0)) + float(d[4]), 1)
+            result_money[d[1]] = round(float(result_money.get(d[1], 0)) + float(str(d[4])[1:]), 1)
         l.append(result_time)
         l.append(result_money)
 
@@ -391,7 +390,7 @@ def export(title,id,user_dict,stage_file):
         money_list.append(li)
         money_list1 = [['Stage Summary:', '', '']]
 
-        component_table_bills = Table(bissdata, colWidths=[70, 70, 40, 290, 90])
+        component_table_bills = Table(bissdata, colWidths=[80, 70, 40, 300, 90])
         component_table_bills.setStyle(TableStyle([
             ('FONTSIZE', (0, 0), (-1, -1), 12),
             ('GRID', (0, 2), (4, 0), 0.5, colors.black)

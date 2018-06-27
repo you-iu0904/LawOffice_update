@@ -1,9 +1,14 @@
-from lxml import etree
-def getIdName(stage_file,value):
-    content = ""
-    with open(stage_file, 'r') as f:
-        content = f.read()
-    xml = etree.fromstring(content)
-    s = xml.findall('.//type[@id='+'"'+value+'"'+']...')
-    return s[0].attrib['id']
-print(getIdName('asd.xml','asd'))
+from xml.etree import ElementTree as et
+
+tree = et.parse('asd.xml')
+root = tree.getroot()
+
+for country in root.findall('stage'):
+    print(country.attrib['id'])
+    for i in country:
+       print(i.attrib['id'])
+       if str(i.attrib['id']) == 'Stage1':
+           for s in i:
+               print(s.attrib['id'])
+       else:
+            pass
