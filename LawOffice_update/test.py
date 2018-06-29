@@ -1,14 +1,18 @@
 from xml.etree import ElementTree as et
 
-tree = et.parse('asd.xml')
-root = tree.getroot()
-
-for country in root.findall('stage'):
-    print(country.attrib['id'])
-    for i in country:
-       print(i.attrib['id'])
-       if str(i.attrib['id']) == 'Stage1':
-           for s in i:
-               print(s.attrib['id'])
-       else:
-            pass
+def show_data(xml_file,value):
+    tree = et.parse(xml_file)
+    root = tree.getroot()
+    number=0
+    for country in root.iter(value):
+        for i in country:
+           i.attrib['id']
+           number+=1
+           try:
+               for s in i:
+                    s.attrib['id']
+                    number+=1
+           except KeyError :
+               pass
+    print(number)
+show_data('asd.xml','Stage1')

@@ -6,6 +6,7 @@ var_stageStartDate_y=''
 var_stageStartDate_m=''
 var_stage_endDate_y=''
 var_stage_endDate_m=''
+var_stageNumber=''
 
 def stage_ui(stage_page):
     global var_stageID
@@ -14,6 +15,7 @@ def stage_ui(stage_page):
     global var_stageStartDate_m
     global var_stage_endDate_y
     global var_stage_endDate_m
+    global var_stageNumber
 
     var_stageID = tk.StringVar()
     var_stageName = tk.StringVar()
@@ -21,6 +23,9 @@ def stage_ui(stage_page):
     var_stageStartDate_m = tk.StringVar()
     var_stage_endDate_y = tk.StringVar()
     var_stage_endDate_m = tk.StringVar()
+    var_stageNumber = tk.StringVar()
+
+    stageNumber_en = tk.Entry(stage_page, textvariable=var_stageNumber)
 
     stageID_La = tk.Label(stage_page, text='Stage ID:')
     stageID_La.place(x=50, y=40)

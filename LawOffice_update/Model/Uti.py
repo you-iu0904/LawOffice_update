@@ -154,7 +154,7 @@ def exportPDF(title,id,user_dict,stage_file):
     root = tree.getroot()
     bissdata1 = []
 
-    for country in root.findall('stage'):
+    for country in root:
         story.append(Paragraph('', styles['title']))
         story.append(Paragraph('', styles['title']))
         story.append(Paragraph(
@@ -162,16 +162,15 @@ def exportPDF(title,id,user_dict,stage_file):
             styles['title']))
         for i in country:
             data = []
-            data.append(i.attrib['id'])
+            data.append(str(i.attrib['number'])+'  '+str(i.attrib['id']))
             data.append('')
             data.append('')
             bissdata1.append(data)
             data2_bills = []
-
             for s in i:
                 try:
                     data2 = []
-                    data2.append('      ' + str(s.attrib['id']))
+                    data2.append('      ' +str(s.attrib['number'])+'  '+str(s.attrib['id']))
                     data2.append('')
                     data2.append('')
                     bissdata1.append(data2)
@@ -186,7 +185,7 @@ def exportPDF(title,id,user_dict,stage_file):
                 for k in s:
                     try:
                         data3 = []
-                        data3.append('            ' + str(k.attrib['id']))
+                        data3.append('            ' +str(k.attrib['number'])+'  '+ str(k.attrib['id']))
                         data3.append('')
                         data3.append('')
                         bissdata1.append(data3)
@@ -201,7 +200,7 @@ def exportPDF(title,id,user_dict,stage_file):
                     for z in k:
                         try:
                             data4 = []
-                            data4.append('             ' + str(z.attrib['id']))
+                            data4.append('             ' +str(z.attrib['number'])+'  '+ str(z.attrib['id']))
                             data4.append('')
                             data4.append('')
                             bissdata1.append(data4)
@@ -256,7 +255,7 @@ def export(title,id,user_dict,stage_file):
 
     suminn_time = []
     suminn_moeny = []
-    for country in root.findall('stage'):
+    for country in root:
         stage_total = []
         moeny = 0.0
         story.append(Paragraph('', styles['title']))
@@ -492,12 +491,24 @@ def statistics(data_list,bissdata):
 
 
 
-#根据子节点返回父节点
-def getIdName(stage_file,value):
-    content = ""
-    with open(stage_file, 'r') as f:
-        content = f.read()
-    xml = etree.fromstring(content)
-    s = xml.findall('.//type[@id='+'"'+value+'"'+']...')
-    return s[0].attrib['id']
-# getIdName('asd.xml',)
+#根据子节点判断子节点的Length
+def node_number(xml_file,value):
+    tree = et.parse(xml_file)
+    root = tree.getroot()
+    number = 0
+    for country in root.iter(value):
+        for i in country:
+            i.attrib['id']
+            number += 1
+    return number
+
+
+# #根据子节点返回父节点
+# def getIdName(stage_file,value):
+#     content = ""
+#     with open(stage_file, 'r') as f:
+#         content = f.read()
+#     xml = etree.fromstring(content)
+#     s = xml.findall('.//type[@id='+'"'+value+'"'+']...')
+#     return s[0].attrib['id']
+# # getIdName('asd.xml',)
