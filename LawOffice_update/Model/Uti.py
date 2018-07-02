@@ -485,7 +485,7 @@ def statistics(data_list,bissdata):
     for i in dic:
         datas = []
         datas.append('                   ' + '(  ' + str(i))
-        datas.append('        '+str('-')+'      hr.      '+str(dic[i][0])+'      mins.' if dic[i][0]<60 else '        '+str(int(dic[i][0]) / 60)+'      hr.      '+str(int(int(dic[i][0]) %60))+'      mins.')
+        datas.append('        '+str('-')+'      hr.      '+str(dic[i][0])+'      mins.' if dic[i][0]<60 else '        '+str(round(int(dic[i][0]) / 60,0))+'      hr.      '+str(int(int(dic[i][0]) %60))+'      mins.')
         datas.append('$' + str(dic[i][1]) + '  )')
         bissdata.append(datas)
 
@@ -503,12 +503,14 @@ def node_number(xml_file,value):
     return number
 
 
-# #根据子节点返回父节点
-# def getIdName(stage_file,value):
-#     content = ""
-#     with open(stage_file, 'r') as f:
-#         content = f.read()
-#     xml = etree.fromstring(content)
-#     s = xml.findall('.//type[@id='+'"'+value+'"'+']...')
-#     return s[0].attrib['id']
-# # getIdName('asd.xml',)
+#根据子节点返回父节点
+def getIdName(stage_file,node,value):
+    ss=[]
+    content = ""
+    with open(stage_file, 'r') as f:
+        content = f.read()
+    xml = etree.fromstring(content)
+    s = xml.findall('.//'+node+'[@id='+'"'+value+'"'+']...')
+    ss.append(s[0].attrib['id'])
+    ss.append(s[0].attrib['number'])
+    return ss

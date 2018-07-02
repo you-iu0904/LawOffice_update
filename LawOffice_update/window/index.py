@@ -534,8 +534,9 @@ def indexUI(user_file,stage_file):
                             tree = stage.read_xml(Stage_file)
                             nodes = stage.find_nodes(tree, ".//")
                             result_nodes = stage.get_node_by_keyvalue(nodes, {"id": str(value).split()[1]})
-                            nu=uti.node_number(stage_file,str(value).split()[1])
-                            print(nu)
+
+                            nu = uti.node_number(stage_file,str(value).split()[1])if str(value).split()[1][0:5]=='Stage' else uti.node_number(stage_file,str(value).split()[1]+str(value).split()[0])
+
                             a = stage.create_node(str(bills_ui.var_incident.get()).replace(' ', '_')+str(value).split()[0]+'.'+str(int(nu)+1), {'id':str(bills_ui.var_incident.get()).replace(' ', '_'),'number':str(value).split()[0]+'.'+str(int(nu)+1)}, None)
                             # 插入到父节点之下
                             stage.add_child_node(result_nodes, a)
@@ -714,9 +715,6 @@ def indexUI(user_file,stage_file):
     def pdfui():
         pdfWindow()
 
-    # 显示全部数据
-    def overall_data():
-        pass
 
     # 退出
     def exita():
@@ -787,7 +785,6 @@ def indexUI(user_file,stage_file):
                     root = dom.documentElement
                     bb = root.getElementsByTagName('bills')
                     for i in range(len(bb)):
-                        print('1')
                         tree_total.insert('', 0, values=(
                         bb[i].getAttribute('Node'), bb[i].getAttribute('FeeEarners'), bb[i].getAttribute('Date'),
                         bb[i].getAttribute('Time'), bb[i].getAttribute('Narrative'), bb[i].getAttribute('Other'),
@@ -867,10 +864,28 @@ def indexUI(user_file,stage_file):
                     try:
                         global value
                         tree = stage.read_xml(Stage_file)
-                        nodes = stage.find_nodes(tree,".//")
-                        result_nodes = stage.get_node_by_keyvalue(nodes, {"id": value.split()[1],'number': value.split()[0]})
-                        stage.change_node_properties(result_nodes, {"id":var_update_node.get().replace(' ', '_')})
+
+                        nodes = stage.find_nodes(tree, ".//")
+                        data = uti.getIdName(stage_file, str(value.split()[1]) + str(value.split()[0]), value.split()[1])
+
+                        del_parent_nodes = stage.find_nodes(tree, ".//")
+                        # 准确定位子节点并删除之
+                        target_del_node = stage.del_node_by_tagkeyvalue(del_parent_nodes,
+                                                                        str(value.split()[1]) + str(value.split()[0]),
+                                                                        {"id": value.split()[1],
+                                                                         'number': value.split()[0]})
+
+                        result_nodes = stage.get_node_by_keyvalue(nodes, {"id":data[0]})
+
+                        a = stage.create_node(str(var_update_node.get())+str(value.split()[0])
+                            , {'id': str(var_update_node.get()).replace(' ', '_'),
+                                               'number': str(value).split()[0]}, None)
+                        # 插入到父节点之下
+                        stage.add_child_node(result_nodes, a)
+                        # 添加xml
                         stage.write_xml(tree, Stage_file)
+
+
                         tk.messagebox.showinfo(title='提示',message='修改成功!')
                         var_update_node.set('')
                         root.destroy()
@@ -1060,7 +1075,6 @@ def indexUI(user_file,stage_file):
     usermenu.add_command(label='导入用户数据', command=input_user)
     usermenu.add_command(label='导入单据数据', command=input_receipts)
     usermenu.add_command(label='导出PDF', command=pdfui)
-    usermenu.add_command(label='显示全部数据', command=overall_data)
     exitemenu = tk.Menu(men, tearoff=0)
     men.add_cascade(label='退出', menu=exitemenu)
     exitemenu.add_command(label='退出', command=exita)
